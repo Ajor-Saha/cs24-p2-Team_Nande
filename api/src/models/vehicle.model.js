@@ -12,7 +12,6 @@ const vehicleSchema = new Schema({
     },
     capacity: {
         type: Number,
-        enum: [3, 5, 7],
         required: true,
     },
     

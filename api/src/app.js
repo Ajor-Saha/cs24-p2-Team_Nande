@@ -17,9 +17,14 @@ app.use(express.static("public"))
 app.use(cookieParser())
 
 //routes import
+import authRouter from "./routes/auth.route.js"
 import userRouter from "./routes/user.route.js"
+import roleRouter from "./routes/role.route.js"
+import permissionRouter from "./routes/permission.route.js"
 
-app.use("/api/user", userRouter);
-
+app.use("/auth", authRouter);
+app.use("/users", userRouter);
+app.use("/rbac", roleRouter);
+app.use("/rbac", permissionRouter)
 
 export { app }

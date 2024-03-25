@@ -13,7 +13,11 @@ const stsSchema = new Schema({
     coordinates: {
         type: { type: String },
         coordinates: [Number]
-    }
+    },
+    manager: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'User'
+    },
 }, { timestamps: true });
 
 stsSchema.index({ coordinates: '2dsphere' });
