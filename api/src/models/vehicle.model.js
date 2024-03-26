@@ -1,7 +1,7 @@
 import mongoose, { Schema } from 'mongoose';
 
 const vehicleSchema = new Schema({
-    vehicle_number: {
+    vehicle_reg_number: {
         type: Number,
         unique: true,
     },
@@ -11,6 +11,14 @@ const vehicleSchema = new Schema({
         required: true,
     },
     capacity: {
+        type: Number,
+        required: true,
+    },
+    fuel_cost_loaded: {
+        type: Number,
+        required: true,
+    },
+    fuel_cost_unloaded: {
         type: Number,
         required: true,
     },

@@ -10,17 +10,22 @@ const stsSchema = new Schema({
         type: Number,
         required: true
     },
-    coordinates: {
-        type: { type: String },
-        coordinates: [Number]
+    GPS_coordinates: {
+        latitude: {
+            type: Number,
+            required: true
+        },
+        longitude: {
+            type: Number,
+            required: true
+        }
     },
-    manager: {
+    managers: [{
         type: mongoose.Schema.Types.ObjectId,
         ref: 'User'
-    },
+    }],
 }, { timestamps: true });
 
-stsSchema.index({ coordinates: '2dsphere' });
 
 export const STS = mongoose.model('STS', stsSchema);
 

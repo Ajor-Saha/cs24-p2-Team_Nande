@@ -2,8 +2,9 @@ import { Button, Label, Modal, TextInput } from "flowbite-react";
 import React, { useState } from "react";
 import { HiPlus } from "react-icons/hi";
 import { useSelector } from "react-redux";
+import { BASE_URL } from "../../apiConfig";
 
-const AddNewUser = () => {
+const AddNewRole = () => {
   const [openModal, setOpenModal] = useState(false);
   const [formData, setFormData] = useState({});
   const [errorMessage, setErrorMessage] = useState("");
@@ -28,7 +29,7 @@ const AddNewUser = () => {
       setLoading(true);
       setErrorMessage("");
       setSuccessMessage("");
-      const res = await fetch("http://localhost:4000/users", {
+      const res = await fetch(`${BASE_URL}/rbac/roles`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -40,13 +41,14 @@ const AddNewUser = () => {
       
       setLoading(false);
       if (!res.ok) {
-        setErrorMessage(data.message || "Failed to create user.");
+        setErrorMessage(data.message || "Failed to create role.");
       } else {
-        setSuccessMessage(data.message || "User created successfully.");
+        setSuccessMessage(data.message || "Role created successfully.");
+        
       }
     } catch (error) {
       setLoading(false);
-      setErrorMessage("Failed to create user.");
+      setErrorMessage("Failed to create role.");
     }
   };
 
@@ -54,7 +56,7 @@ const AddNewUser = () => {
     <div>
       <Button onClick={() => setOpenModal(true)}>
         <HiPlus className="mr-2 h-5 w-5" />
-        Add new user
+        Add New Role
       </Button>
       <Modal show={openModal} size="md" onClose={onCloseModal} popup>
         <Modal.Header />
@@ -62,16 +64,16 @@ const AddNewUser = () => {
           <form onSubmit={handleSubmit}>
             <div className="space-y-6">
               <h3 className="text-xl font-medium text-gray-900 dark:text-white">
-                Add new user to our platform
+                Add new role to our platform
               </h3>
               <div>
                 <div className="mb-2 block">
-                  <Label htmlFor="fullName" value="Full Name" />
+                  <Label htmlFor="name" value="Role Name" />
                 </div>
                 <TextInput
-                  id="fullName"
-                  name="fullName"
-                  placeholder="Jon Doe"
+                  id="name"
+                  name="name"
+                  placeholder="STS,Landfill"
                   type="text"
                   onChange={handleChange}
                   required
@@ -79,46 +81,21 @@ const AddNewUser = () => {
               </div>
               <div>
                 <div className="mb-2 block">
-                  <Label htmlFor="username" value="Username" />
+                  <Label htmlFor="description" value="Role Description" />
                 </div>
                 <TextInput
-                  id="username"
-                  name="username"
-                  placeholder="john"
+                  id="description"
+                  name="description"
+                  placeholder="This role is for"
                   type="text"
                   onChange={handleChange}
                   required
                 />
               </div>
-              <div>
-                <div className="mb-2 block">
-                  <Label htmlFor="email" value="Email" />
-                </div>
-                <TextInput
-                  id="email"
-                  name="email"
-                  type="email"
-                  placeholder="name@company.com"
-                  onChange={handleChange}
-                  required
-                />
-              </div>
-              <div>
-                <div className="mb-2 block">
-                  <Label htmlFor="password" value="Your password" />
-                </div>
-                <TextInput
-                  id="password"
-                  name="password"
-                  type="password"
-                  onChange={handleChange}
-                  required
-                />
-              </div>
-
+              
               <div className="w-full">
                 <Button className="text-lg font-sans" type="submit">
-                  {loading ? "Loading..." : "Create User"}
+                  {loading ? "Loading..." : "Create Role"}
                 </Button>
               </div>
               {errorMessage && (
@@ -135,4 +112,4 @@ const AddNewUser = () => {
   );
 };
 
-export default AddNewUser;
+export default AddNewRole;

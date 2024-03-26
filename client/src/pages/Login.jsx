@@ -43,14 +43,14 @@ const Login = () => {
   };
 
   return (
-    
+   
       <div className="py-32 lg:py-44 dark:bg-gray-900">
         <div className="flex bg-white rounded-lg shadow-lg overflow-hidden mx-auto max-w-sm lg:max-w-4xl">
           <div
             className="hidden lg:block lg:w-1/2 bg-cover"
             style={{
               backgroundImage:
-                "url('https://images.unsplash.com/photo-1546514714-df0ccc50d7bf?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=667&q=80')",
+                "url('https://firebasestorage.googleapis.com/v0/b/e-commerce-f3116.appspot.com/o/dncc.webp?alt=media&token=c7456619-b967-40e8-a1d5-e5f8be9fa5b5')",
             }}
           ></div>
           <div className="w-full p-8 lg:w-1/2">

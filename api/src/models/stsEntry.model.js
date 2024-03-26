@@ -6,11 +6,12 @@ const stsEntrySchema = new Schema({
         ref: 'STS',
         required: true
     },
-    vehicle_number: {
-        type: String,
+    vehicle_reg_number: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Vehicle',
         required: true
     },
-    volume_of_waste: {
+    weight_of_waste: {
         type: Number,
         required: true
     },

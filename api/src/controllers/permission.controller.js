@@ -74,6 +74,20 @@ const updatePermission = asyncHandler(async (req, res) => {
     );
 });
 
+const getPermissionById = asyncHandler(async (req, res) => {
+  const { permissionId } = req.params;
+
+  const permission = await Permission.findById({ _id:permissionId });
+
+  if (!permission) {
+    throw new ApiError(404, 'Permission not found');
+  }
+
+  return res.status(200).json(new ApiResponse(200, permission, 'Permission found'));
+});
+
+
+
 const deletePermission = asyncHandler(async (req, res) => {
   if (!req.user.isAdmin) {
     throw new ApiError(401, "You are not authorized");
@@ -98,4 +112,10 @@ const deletePermission = asyncHandler(async (req, res) => {
   return res.status(200).json(new ApiResponse(200, {}, "Permission deleted"));
 });
 
-export { addPermission, getPermissions, updatePermission, deletePermission };
+export {
+     addPermission,
+     getPermissions,
+     updatePermission,
+     deletePermission,
+     getPermissionById
+};

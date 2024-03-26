@@ -1,8 +1,6 @@
 import { Sidebar } from "flowbite-react";
 import { HiUser, HiArrowSmRight, HiDocumentText, HiOutlineUserGroup, HiChartPie, HiAnnotation } from "react-icons/hi";
-import { MdOutlineProductionQuantityLimits } from "react-icons/md";
-import { RiMoneyDollarCircleLine } from "react-icons/ri";
-import { IoIosAddCircleOutline } from "react-icons/io";
+import { RxAvatar } from "react-icons/rx";
 import { useEffect, useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
@@ -73,36 +71,15 @@ const DashSidebar = () => {
               Profile
             </Sidebar.Item>
           </Link>
+          
           {currentUser.isAdmin && (
-            <Link to="/dashboard?tab=products">
+            <Link to="/dashboard?tab=rolesandpermission">
               <Sidebar.Item
-                active={tab === "products"}
-                icon={MdOutlineProductionQuantityLimits}
+                active={tab === "rolesandpermission"}
+                icon={RxAvatar}
                 as="div"
               >
-                Products
-              </Sidebar.Item>
-            </Link>
-          )}
-          {currentUser.isAdmin && (
-            <Link to="/dashboard?tab=addproduct">
-              <Sidebar.Item
-                active={tab === "addproduct"}
-                icon={IoIosAddCircleOutline}
-                as="div"
-              >
-                Add Product
-              </Sidebar.Item>
-            </Link>
-          )}
-          {currentUser.isAdmin && (
-            <Link to="/dashboard?tab=transaction">
-              <Sidebar.Item
-                active={tab === "transaction"}
-                icon={RiMoneyDollarCircleLine}
-                as="div"
-              >
-                Transaction
+                RolesAndPermission
               </Sidebar.Item>
             </Link>
           )}
@@ -117,17 +94,7 @@ const DashSidebar = () => {
               </Sidebar.Item>
             </Link>
           )}
-          {currentUser.isAdmin && (
-            <Link to="/dashboard?tab=comments">
-              <Sidebar.Item
-                active={tab === "comments"}
-                icon={HiAnnotation}
-                as="div"
-              >
-                Comments
-              </Sidebar.Item>
-            </Link>
-          )}
+          
           <Sidebar.Item icon={HiArrowSmRight}
            className="cursor-pointer"
            onClick={handleSignOut}

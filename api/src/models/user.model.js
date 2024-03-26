@@ -32,12 +32,10 @@ const userSchema = new Schema(
       type: Boolean,
       default: false,
     },
-    roles: [
-      {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: "Role",
-      },
-    ],
+    role: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Role",
+    },
     password: {
       type: String,
       required: [true, "Password is required"],
