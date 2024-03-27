@@ -12,6 +12,7 @@ import DashPermission from "../components/admin/DashPermission";
 import DashVehicle from "../components/admin/DashVehicle";
 import ManageVehicle from "../components/admin/ManageVehicle";
 import DashSTS from "../components/sts/DashSTS";
+import ManageSTS from "../components/sts/ManageSTS";
 
 const Dashboard = () => {
   const dispatch = useDispatch();
@@ -28,6 +29,7 @@ const Dashboard = () => {
   const [roleId, setRoleId] = useState("");
   const [permissionId, setPermissionId] = useState("");
   const [vehicle_reg_number, setVehicle_reg_number] = useState("");
+  const [ward_number, setWard_number] = useState("");
 
   useEffect(() => {
     const urlParams = new URLSearchParams(location.search);
@@ -36,6 +38,7 @@ const Dashboard = () => {
     const roleIdFromUrl = urlParams.get("roleId"); 
     const permissionIdFromUrl = urlParams.get("permissionId");
     const vehicle_reg_numberFromUrl = urlParams.get("vehicle_reg_number");
+    const ward_numberFromUrl = urlParams.get("ward_number")
 
     if (tabFromUrl) {
       setTab(tabFromUrl);
@@ -53,6 +56,9 @@ const Dashboard = () => {
 
     if (vehicle_reg_numberFromUrl) {
       setVehicle_reg_number(vehicle_reg_numberFromUrl)
+    }
+    if (ward_numberFromUrl) {
+      setWard_number(ward_numberFromUrl)
     }
   }, [location.search]);
 
@@ -83,6 +89,8 @@ const Dashboard = () => {
       {tab == 'manageVehicle' && <ManageVehicle vehicle_reg_number={vehicle_reg_number} />}
       {/* sts */}
       {tab == 'sts' && <DashSTS />}
+      {/*Manage sts */}
+      {tab == 'manageSTS' && <ManageSTS ward_number={ward_number}/>}
     </div>
     
   );

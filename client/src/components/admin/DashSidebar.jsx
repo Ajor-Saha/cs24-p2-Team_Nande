@@ -2,6 +2,7 @@ import { Sidebar } from "flowbite-react";
 import { HiUser, HiArrowSmRight, HiDocumentText, HiOutlineUserGroup, HiChartPie, HiAnnotation } from "react-icons/hi";
 import { FaChartArea } from "react-icons/fa6";
 import { MdOutlineFireTruck } from "react-icons/md";
+import { GiIsland } from "react-icons/gi";
 import { RxAvatar } from "react-icons/rx";
 import { useEffect, useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
@@ -115,6 +116,17 @@ const DashSidebar = () => {
                 as="div"
               >
                 ManageSTS
+              </Sidebar.Item>
+            </Link>
+          )}
+          {currentUser.isAdmin && (
+            <Link to="/dashboard?tab=landfill">
+              <Sidebar.Item
+                active={tab === "landfill"}
+                icon={GiIsland}
+                as="div"
+              >
+                ManageLandFill
               </Sidebar.Item>
             </Link>
           )}

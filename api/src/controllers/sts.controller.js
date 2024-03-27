@@ -1,3 +1,4 @@
+import { Role } from "../models/role.model.js";
 import { STS } from "../models/sts.model.js";
 import { User } from "../models/user.model.js";
 import { ApiError } from "../utils/ApiError.js";
@@ -151,7 +152,56 @@ const deleteManagerSTS = asyncHandler(async (req, res) => {
   
     return res.status(201).json(new ApiResponse(201, sts, "Manager removed from STS successfully"));
 });
-  
+
+
+const getAvailableSTSManager = asyncHandler(async (req, res) => {
+  if (!req.user.isAdmin) {
+    throw new ApiError(401, "You are not authorized");
+  }
+  try {
+    const usersWithRoles = await User.find({ role: { $ne: null } });
+    const stsManagerRole = await Role.findOne({ name: 'STS Manager' });
+
+    if (!stsManagerRole) {
+      throw new ApiError(401, "STS manager role not found");
+    }
+
+    const stsManagerRoleId = stsManagerRole._id;
+    const stsManagerUsers = usersWithRoles.filter(user => user.role.equals(stsManagerRoleId));
+    
+    // Array to store stsManagerUsers with no matching STS managers
+    const stsManagersWithNoMatchingSTS = [];
+
+    // Find all STS documents
+    const allSTS = await STS.find({});
+
+    // Iterate over each stsManagerUser and check if its _id matches any manager in STS model
+    for (const stsManagerUser of stsManagerUsers) {
+      let matched = false;
+      for (const sts of allSTS) {
+        if (sts.managers.includes(stsManagerUser._id)) {
+          matched = true;
+          break;
+        }
+      }
+      if (!matched) {
+        stsManagersWithNoMatchingSTS.push(stsManagerUser);
+      }
+    }
+
+    return res.status(201).json(new ApiResponse(201, stsManagersWithNoMatchingSTS, "STS successfully"));
+  } catch (error) {
+    console.error('Error in getting available STS Managers:', error);
+    return res.status(500).json({
+      success: false,
+      message: 'Failed to get available STS Managers',
+      error: error.message,
+    });
+  }
+});
+
+
+
 
 export {
      addSTS,
@@ -160,4 +210,5 @@ export {
      deleteSTS,
      assignManagerToSTS,
      deleteManagerSTS,
+     getAvailableSTSManager
 };

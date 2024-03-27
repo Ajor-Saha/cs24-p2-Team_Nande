@@ -100,7 +100,11 @@ const DashSTS= () => {
                     Delete
                   </span>
                 </Table.Cell>
-                <Table.Cell>Manage</Table.Cell>
+                <Table.Cell>
+                <Link to={`/dashboard?tab=manageSTS&ward_number=${st.ward_number}`}>
+                      Manage
+                    </Link>
+                </Table.Cell>
               </Table.Row>
             </Table.Body>
           ))}
