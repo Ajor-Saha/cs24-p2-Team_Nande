@@ -10,7 +10,7 @@ const stsSchema = new Schema({
         type: Number,
         required: true
     },
-    GPS_coordinates: {
+    gps_coordinates: {
         latitude: {
             type: Number,
             required: true

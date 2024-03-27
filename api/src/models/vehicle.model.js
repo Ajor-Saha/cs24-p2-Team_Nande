@@ -3,6 +3,7 @@ import mongoose, { Schema } from 'mongoose';
 const vehicleSchema = new Schema({
     vehicle_reg_number: {
         type: Number,
+        required: true,
         unique: true,
     },
     type: {

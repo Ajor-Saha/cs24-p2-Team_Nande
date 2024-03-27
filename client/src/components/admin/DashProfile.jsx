@@ -1,7 +1,6 @@
 import React, { useState } from "react";
 import { Alert, Avatar, Button, Tabs, TextInput } from "flowbite-react";
 import { useDispatch, useSelector } from "react-redux";
-
 import { useNavigate } from "react-router-dom";
 import { updateFailure, updateStart } from "../redux/user/userSlice";
 import { HiUserCircle } from "react-icons/hi";

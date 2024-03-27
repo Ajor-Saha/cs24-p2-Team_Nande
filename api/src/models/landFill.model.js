@@ -20,7 +20,7 @@ const landfillSchema = new Schema({
             required: true
         }
     },
-    GPS_coordinates: {
+    gps_coordinates: {
         latitude: {
             type: Number,
             required: true,

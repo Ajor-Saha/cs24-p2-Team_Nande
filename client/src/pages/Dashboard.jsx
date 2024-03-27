@@ -9,6 +9,9 @@ import DashMange from "../components/admin/DashMange";
 import DashRole from "../components/admin/DashRole";
 import DashRoleManage from "../components/admin/DashRoleManage";
 import DashPermission from "../components/admin/DashPermission";
+import DashVehicle from "../components/admin/DashVehicle";
+import ManageVehicle from "../components/admin/ManageVehicle";
+import DashSTS from "../components/sts/DashSTS";
 
 const Dashboard = () => {
   const dispatch = useDispatch();
@@ -24,6 +27,7 @@ const Dashboard = () => {
   const [userId, setUserId] = useState(""); // State to store userId
   const [roleId, setRoleId] = useState("");
   const [permissionId, setPermissionId] = useState("");
+  const [vehicle_reg_number, setVehicle_reg_number] = useState("");
 
   useEffect(() => {
     const urlParams = new URLSearchParams(location.search);
@@ -31,6 +35,7 @@ const Dashboard = () => {
     const userIdFromUrl = urlParams.get("userId");
     const roleIdFromUrl = urlParams.get("roleId"); 
     const permissionIdFromUrl = urlParams.get("permissionId");
+    const vehicle_reg_numberFromUrl = urlParams.get("vehicle_reg_number");
 
     if (tabFromUrl) {
       setTab(tabFromUrl);
@@ -44,6 +49,10 @@ const Dashboard = () => {
 
     if (permissionIdFromUrl) {
       setPermissionId(permissionIdFromUrl)
+    }
+
+    if (vehicle_reg_numberFromUrl) {
+      setVehicle_reg_number(vehicle_reg_numberFromUrl)
     }
   }, [location.search]);
 
@@ -67,7 +76,13 @@ const Dashboard = () => {
       {/*mange roles */}
       {tab == 'manageRole' && <DashRoleManage roleId={roleId}/>}
       {/*manage permission */}
-      {tab == 'managePermission' && <DashPermission permissionId={permissionId} />}  
+      {tab == 'managePermission' && <DashPermission permissionId={permissionId} />} 
+      { /* vehicle */}
+      {tab == 'vehicle' && <DashVehicle />}
+      {/*manage vehicle */}
+      {tab == 'manageVehicle' && <ManageVehicle vehicle_reg_number={vehicle_reg_number} />}
+      {/* sts */}
+      {tab == 'sts' && <DashSTS />}
     </div>
     
   );

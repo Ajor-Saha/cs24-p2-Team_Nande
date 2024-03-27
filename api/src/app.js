@@ -21,10 +21,14 @@ import authRouter from "./routes/auth.route.js"
 import userRouter from "./routes/user.route.js"
 import roleRouter from "./routes/role.route.js"
 import permissionRouter from "./routes/permission.route.js"
+import vehicleRouter from "./routes/vehicle.route.js"
+import stsRouter from "./routes/sts.route.js"
 
 app.use("/auth", authRouter);
 app.use("/users", userRouter);
 app.use("/rbac", roleRouter);
 app.use("/rbac", permissionRouter)
+app.use("/vehicle", vehicleRouter);
+app.use("/sts", stsRouter);
 
 export { app }

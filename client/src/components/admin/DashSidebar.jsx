@@ -1,5 +1,7 @@
 import { Sidebar } from "flowbite-react";
 import { HiUser, HiArrowSmRight, HiDocumentText, HiOutlineUserGroup, HiChartPie, HiAnnotation } from "react-icons/hi";
+import { FaChartArea } from "react-icons/fa6";
+import { MdOutlineFireTruck } from "react-icons/md";
 import { RxAvatar } from "react-icons/rx";
 import { useEffect, useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
@@ -94,7 +96,28 @@ const DashSidebar = () => {
               </Sidebar.Item>
             </Link>
           )}
-          
+          {currentUser.isAdmin && (
+            <Link to="/dashboard?tab=vehicle">
+              <Sidebar.Item
+                active={tab === "vehicle"}
+                icon={MdOutlineFireTruck}
+                as="div"
+              >
+                ManageVehicle
+              </Sidebar.Item>
+            </Link>
+          )}
+          {currentUser.isAdmin && (
+            <Link to="/dashboard?tab=sts">
+              <Sidebar.Item
+                active={tab === "sts"}
+                icon={FaChartArea}
+                as="div"
+              >
+                ManageSTS
+              </Sidebar.Item>
+            </Link>
+          )}
           <Sidebar.Item icon={HiArrowSmRight}
            className="cursor-pointer"
            onClick={handleSignOut}
