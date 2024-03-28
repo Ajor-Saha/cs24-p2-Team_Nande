@@ -10,6 +10,9 @@ const ManageVehicle = ({ vehicle_reg_number }) => {
   const [loading, setLoading] = useState(false);
   const { currentUser, accessToken } = useSelector((state) => state.user);
   const [vehicle, setVehicle] = useState({});
+  const [message, setMessage] = useState("");
+  const [vehicleAssignment, setVehicleAssignment] = useState(false);
+  const [ward_number, setWard_number] = useState(0);
 
   useEffect(() => {
     const fetchVehicleByReg = async () => {
@@ -75,19 +78,82 @@ const ManageVehicle = ({ vehicle_reg_number }) => {
       setSuccessMessage("Vehicle updated successfully");
       setVehicle(updatedVehicle.data);
     } catch (error) {
-        console.error("Error updating vehicle:", error);
-        setErrorMessage("Failed to update vehicle");
+      console.error("Error updating vehicle:", error);
+      setErrorMessage("Failed to update vehicle");
     } finally {
       setLoading(false);
     }
   };
+
+  const handleCheckAssignment = async () => {
+    try {
+      setLoading(true);
+      const response = await fetch(
+        `${BASE_URL}/vehicle/checkvehicleassignment/${vehicle_reg_number}`,
+        {
+          method: "GET",
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
+      const data = await response.json();
+      setLoading(false);
+      if (response.ok) {
+        if (typeof data.data === "object") {
+          setMessage("Vehicle is available");
+          setVehicleAssignment(true);
+        } else {
+          setMessage(
+            `Vehicle is assigned to STS with ward number: ${data.data}`
+          );
+          setVehicleAssignment(false);
+        }
+      } else {
+        setMessage("Failed to check vehicle assignment");
+      }
+    } catch (error) {
+      console.error("Error checking vehicle assignment:", error);
+      setMessage("Failed to check vehicle assignment");
+      setLoading(false);
+    }
+  };
+
+  //console.log(ward_number);
+  const AssignVehicle = async (e) => {
+    e.preventDefault();
+    try {
+      setLoading(true);
+      const response = await fetch(`${BASE_URL}/vehicle/assignvehicle/${vehicle_reg_number}`, {
+        method: 'PUT',
+        headers: {
+          'Authorization': `Bearer ${accessToken}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ ward_number: ward_number })
+      });
+      const data = await response.json();
+      setLoading(false);
+      if (response.ok) {
+        setMessage(data.message || "Vehicle assigned to STS successfully");
+      } else {
+        setMessage(data.message || "Failed to assign vehicle to STS");
+      }
+    } catch (error) {
+      console.error("Error assigning vehicle to STS:", error);
+      setMessage("Failed to assign vehicle to STS");
+      setLoading(false);
+    }
+  };
+  
 
   return (
     <div className="mx-auto py-5">
       <form onSubmit={handleSubmit}>
         <div className="space-y-6">
           <h3 className="text-xl font-medium text-gray-900 dark:text-white">
-             Update vehicle details
+            Update vehicle details
           </h3>
           <div className="w-96">
             <div className="mb-2 block">
@@ -108,7 +174,12 @@ const ManageVehicle = ({ vehicle_reg_number }) => {
             <div className="mb-2 block">
               <Label htmlFor="type" value="Select vehicle type" />
             </div>
-            <Select id="type" required  onChange={handleChange} value={formData.type || ""}>
+            <Select
+              id="type"
+              required
+              onChange={handleChange}
+              value={formData.type || ""}
+            >
               <option value="Open Truck">Open Truck</option>
               <option value="Dump Truck">Dump Truck</option>
               <option value="Compactor">Compactor</option>
@@ -171,6 +242,34 @@ const ManageVehicle = ({ vehicle_reg_number }) => {
           )}
         </div>
       </form>
+      <div className="py-5 items-center">
+        <Button onClick={handleCheckAssignment} disabled={loading}>
+          Check Vehicle Assignment
+        </Button>
+        {message && <p className="py-5">{message}</p>}
+        {vehicleAssignment && (
+          <form onSubmit={AssignVehicle}>
+            <div className="mb-2 block">
+              <Label htmlFor="ward_number" value="Ward Number of a STS" />
+            </div>
+            <TextInput
+              id="capacity"
+              name="capacity"
+              type="number"
+              placeholder="3,5,7..."
+              value={ward_number}
+              onChange={(e) => setWard_number(e.target.value)}
+              required
+            />
+            
+            <Button className="text-lg font-sans mt-5 text-center" type="submit">
+              {loading ? "Loading..." : "Assign this vehicle"}
+            </Button>
+            
+          </form>
+        )}
+        {message && <p>{message}</p>}
+      </div>
     </div>
   );
 };

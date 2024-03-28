@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Alert, Avatar, Button, Tabs, TextInput } from "flowbite-react";
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
@@ -18,6 +18,8 @@ const DashProfile = () => {
   const [loadingPass, setLoadingPass] = useState(false);
   const [passwordChangeMessage, setPasswordChangeMessage] = useState("");
   const dispatch = useDispatch();
+  const [stsDetails, setSTSDetails] = useState(null);
+  const [isstsManager, setStsManager] = useState(false);
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.id]: e.target.value });
@@ -56,9 +58,37 @@ const DashProfile = () => {
       // If failed, set loadingPass to false and display failure message
       setLoadingPass(false);
       setPasswordChangeMessage("Failed to change password");
-
     }
   };
+
+  useEffect(() => {
+    const userId = currentUser._id;
+    const fetchSTS = async () => {
+      setStsManager(false);
+      try {
+        const response = await fetch(
+          `${BASE_URL}/sts/userstsdetails/${userId}`,
+          {
+            method: "GET",
+          }
+        );
+        const data = await response.json();
+        if (response.ok) {
+          setSTSDetails(data.data);
+          setStsManager(true);
+        } else {
+          console.error("Failed to fetch user's STS:", data.message);
+        }
+      } catch (error) {
+        console.error("Error fetching user's STS:", error);
+        setStsManager(false);
+      }
+    };
+
+    if (userId) {
+      fetchSTS();
+    }
+  }, [currentUser._id]);
 
   return (
     <div className="relative py-14  mx-auto flex flex-col text-gray-700 dark:text-gray-200 bg-transparent shadow-none rounded-xl bg-clip-border">
@@ -171,10 +201,46 @@ const DashProfile = () => {
         {error ? error.message || "Something went wrong!" : ""}
       </p>
       {passwordChangeMessage && (
-        <Alert type={passwordChangeMessage.includes("successfully") ? "success" : "error"} className="mt-4">
+        <Alert
+          type={
+            passwordChangeMessage.includes("successfully") ? "success" : "error"
+          }
+          className="mt-4"
+        >
           {passwordChangeMessage}
         </Alert>
       )}
+      <div className="py-5">
+        
+        {isstsManager ? (
+          <div>
+            <p>STS Managers Details</p>
+            <p>You are STS manager</p>
+            <p>Ward number : {stsDetails?.ward_number}</p>
+            <p>
+              Total Manager assigned to this sts is :{" "}
+              {stsDetails.managers.length}
+            </p>
+            <div>
+              <p>
+                Total Vehicle assigned to this sts is:{" "}
+                {stsDetails.vehicles.length}
+              </p>
+              {stsDetails.vehicles.map((vehicle, index) => (
+                <div key={index}>
+                  {/* Render vehicle details here */}
+                  <p>
+                    Vehicle Registration Number: {vehicle}
+                  </p>
+                  {/* Add more vehicle details as needed */}
+                </div>
+              ))}
+            </div>
+          </div>
+        ) : (
+          <p>Not Assigned</p>
+        )}
+      </div>
     </div>
   );
 };

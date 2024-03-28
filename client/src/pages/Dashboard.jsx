@@ -13,6 +13,9 @@ import DashVehicle from "../components/admin/DashVehicle";
 import ManageVehicle from "../components/admin/ManageVehicle";
 import DashSTS from "../components/sts/DashSTS";
 import ManageSTS from "../components/sts/ManageSTS";
+import DashLandFill from "../components/landfill/DashLandFill";
+import ManageLandFill from "../components/landfill/ManageLandFill";
+import ManagerSTS from "../components/sts/ManagerSTS";
 
 const Dashboard = () => {
   const dispatch = useDispatch();
@@ -30,6 +33,7 @@ const Dashboard = () => {
   const [permissionId, setPermissionId] = useState("");
   const [vehicle_reg_number, setVehicle_reg_number] = useState("");
   const [ward_number, setWard_number] = useState("");
+  const [landFill_name, setLandFill_name] = useState("");
 
   useEffect(() => {
     const urlParams = new URLSearchParams(location.search);
@@ -39,6 +43,7 @@ const Dashboard = () => {
     const permissionIdFromUrl = urlParams.get("permissionId");
     const vehicle_reg_numberFromUrl = urlParams.get("vehicle_reg_number");
     const ward_numberFromUrl = urlParams.get("ward_number")
+    const landfillnameFromUrl = urlParams.get("name");
 
     if (tabFromUrl) {
       setTab(tabFromUrl);
@@ -59,6 +64,10 @@ const Dashboard = () => {
     }
     if (ward_numberFromUrl) {
       setWard_number(ward_numberFromUrl)
+    }
+    
+    if (landfillnameFromUrl) {
+      setLandFill_name(landfillnameFromUrl)
     }
   }, [location.search]);
 
@@ -91,6 +100,11 @@ const Dashboard = () => {
       {tab == 'sts' && <DashSTS />}
       {/*Manage sts */}
       {tab == 'manageSTS' && <ManageSTS ward_number={ward_number}/>}
+      {/*Landfill*/}
+      {tab == 'landfill' && <DashLandFill />}
+      {/*manage Landfill*/}
+      {tab == 'manageLandfill' && <ManageLandFill landFill_name={landFill_name} />}
+      {tab == 'userSTS' && <ManagerSTS />}
     </div>
     
   );

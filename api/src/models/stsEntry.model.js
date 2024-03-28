@@ -7,8 +7,7 @@ const stsEntrySchema = new Schema({
         required: true
     },
     vehicle_reg_number: {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: 'Vehicle',
+        type: Number, // Assuming vehicle registration numbers are numbers
         required: true
     },
     weight_of_waste: {
@@ -21,6 +20,10 @@ const stsEntrySchema = new Schema({
     },
     time_of_departure: {
         type: Date,
+        required: true
+    },
+    distance_traveled: {
+        type: Number,
         required: true
     }
 }, { timestamps: true });

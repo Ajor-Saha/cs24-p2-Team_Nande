@@ -1,3 +1,4 @@
+import { STS } from "../models/sts.model.js";
 import { Vehicle } from "../models/vehicle.model.js";
 import { ApiError } from "../utils/ApiError.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
@@ -153,8 +154,6 @@ const updateVehicle = asyncHandler(async (req, res) => {
     updateFields.fuel_cost_unloaded = fuel_cost_unloaded;
   }
 
-  
-
   const updatedVehicle = await Vehicle.findOneAndUpdate(
     { vehicle_reg_number },
     updateFields,
@@ -170,10 +169,70 @@ const updateVehicle = asyncHandler(async (req, res) => {
     .json(new ApiResponse(200, updatedVehicle, "Vehicle updated successfully"));
 });
 
+const checkVehicleAssignment = asyncHandler(async (req, res) => {
+  if (!req.user.isAdmin) {
+    throw new ApiError(401, "You are not authorized");
+  }
+
+  const { vehicle_reg_number } = req.params;
+  const vehicle = await Vehicle.findOne({ vehicle_reg_number });
+  if (!vehicle) {
+    throw new ApiError(401, "Vehicle not found");
+  }
+
+  const sts = await STS.findOne({ vehicles: { $in: [vehicle_reg_number] } });
+  if (!sts) {
+    return res
+      .status(201)
+      .json(new ApiResponse(201, vehicle, "Vehicle not assigned to any STS"));
+  }
+
+  return res
+    .status(201)
+    .json(new ApiResponse(201, sts.ward_number, "Vehicle assigned to STS"));
+});
+
+const assignVehicleToSTS = async (req, res) => {
+  const { ward_number } = req.body;
+  const { vehicle_reg_number } = req.params;
+
+  // Find the STS document by ward_number
+  const sts = await STS.findOne({ ward_number });
+
+  // Check if the STS document exists
+  if (!sts) {
+    throw new ApiError(401, "STS not found")
+  }
+
+  const vehicle = await Vehicle.findOne({ vehicle_reg_number });
+
+  if (!vehicle) {
+    throw new ApiError(401,"Vehicle not found")
+  }
+
+  // Check if the vehicle is already assigned to the STS
+  if (sts.vehicles.includes(vehicle_reg_number)) {
+    return res.status(201).json(new ApiResponse(201,{}, "Vehicle already assigned to this STS"));
+  }
+
+  // Check if the vehicle exists
+  
+
+  // Assign the vehicle to the STS
+  sts.vehicles.push(vehicle_reg_number);
+  await sts.save();
+
+  return res
+    .status(201)
+    .json(new ApiResponse(201, sts, "Vehicle assigned to STS successfully"));
+};
+
 export {
   addVehicle,
   getVehicleByRegNumber,
   getAllVehicle,
   deleteVehicle,
   updateVehicle,
+  checkVehicleAssignment,
+  assignVehicleToSTS
 };

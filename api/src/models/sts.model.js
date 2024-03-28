@@ -24,6 +24,10 @@ const stsSchema = new Schema({
         type: mongoose.Schema.Types.ObjectId,
         ref: 'User'
     }],
+    vehicles: [{
+        type: Number, 
+        required: true
+    }]
 }, { timestamps: true });
 
 

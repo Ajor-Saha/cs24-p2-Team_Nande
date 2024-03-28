@@ -16,6 +16,8 @@ const DashSidebar = () => {
   const { currentUser, accessToken } = useSelector((state) => state.user);
   const navigate = useNavigate();
   const dispatch = useDispatch();
+  const [stsDetails, setSTSDetails] = useState(null);
+  const [isstsManager, setStsManager] = useState(false);
 
   useEffect(() => {
     const urlParams = new URLSearchParams(location.search);
@@ -47,6 +49,32 @@ const DashSidebar = () => {
     }
   };
 
+  useEffect(() => {
+    const userId = currentUser._id;
+    const fetchSTS = async () => {
+      setStsManager(false);
+      try {
+        const response = await fetch(`${BASE_URL}/sts/userstsdetails/${userId}`, {
+          method: "GET"
+        });
+        const data = await response.json();
+        if (response.ok) {
+          setSTSDetails(data.data);
+          setStsManager(true)
+        } else {
+          console.error("Failed to fetch user's STS:", data.message);
+        }
+      } catch (error) {
+        console.error("Error fetching user's STS:", error);
+        setStsManager(false);
+      }
+      
+    };
+
+    if (userId) {
+      fetchSTS();
+    }
+  }, [currentUser._id]);
 
   return (
     <Sidebar className="w-full md:w-60">
@@ -130,6 +158,18 @@ const DashSidebar = () => {
               </Sidebar.Item>
             </Link>
           )}
+          {isstsManager && (
+            <Link to="/dashboard?tab=userSTS">
+              <Sidebar.Item
+                active={tab === "userSTS"}
+                icon={FaChartArea}
+                as="div"
+              >
+                ManageSTS
+              </Sidebar.Item>
+            </Link>
+          )}
+          
           <Sidebar.Item icon={HiArrowSmRight}
            className="cursor-pointer"
            onClick={handleSignOut}
