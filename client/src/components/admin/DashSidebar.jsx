@@ -1,5 +1,13 @@
 import { Sidebar } from "flowbite-react";
-import { HiUser, HiArrowSmRight, HiDocumentText, HiOutlineUserGroup, HiChartPie, HiAnnotation } from "react-icons/hi";
+import {
+  HiUser,
+  HiArrowSmRight,
+  HiDocumentText,
+  HiOutlineUserGroup,
+  HiChartPie,
+  HiAnnotation,
+} from "react-icons/hi";
+import { GrUserManager } from "react-icons/gr";
 import { FaChartArea } from "react-icons/fa6";
 import { MdOutlineFireTruck } from "react-icons/md";
 import { GiIsland } from "react-icons/gi";
@@ -18,6 +26,8 @@ const DashSidebar = () => {
   const dispatch = useDispatch();
   const [stsDetails, setSTSDetails] = useState(null);
   const [isstsManager, setStsManager] = useState(false);
+  const [landFillDetails, setLandFillDetails] = useState({});
+  const [isLandfillManager, setLandfillManager] = useState(false);
 
   useEffect(() => {
     const urlParams = new URLSearchParams(location.search);
@@ -27,7 +37,7 @@ const DashSidebar = () => {
     }
   }, [location.search]);
 
-  const handleSignOut =async () => {
+  const handleSignOut = async () => {
     try {
       const response = await fetch(`${BASE_URL}/auth/logout`, {
         method: "POST",
@@ -39,7 +49,7 @@ const DashSidebar = () => {
 
       if (response.ok) {
         dispatch(signOut());
-        navigate("/login")
+        navigate("/login");
       } else {
         throw new Error("Failed to sign out");
       }
@@ -54,13 +64,16 @@ const DashSidebar = () => {
     const fetchSTS = async () => {
       setStsManager(false);
       try {
-        const response = await fetch(`${BASE_URL}/sts/userstsdetails/${userId}`, {
-          method: "GET"
-        });
+        const response = await fetch(
+          `${BASE_URL}/sts/userstsdetails/${userId}`,
+          {
+            method: "GET",
+          }
+        );
         const data = await response.json();
         if (response.ok) {
           setSTSDetails(data.data);
-          setStsManager(true)
+          setStsManager(true);
         } else {
           console.error("Failed to fetch user's STS:", data.message);
         }
@@ -68,7 +81,6 @@ const DashSidebar = () => {
         console.error("Error fetching user's STS:", error);
         setStsManager(false);
       }
-      
     };
 
     if (userId) {
@@ -76,16 +88,45 @@ const DashSidebar = () => {
     }
   }, [currentUser._id]);
 
+  useEffect(() => {
+    const userId = currentUser._id;
+    const fetchLandFill = async () => {
+      setLandfillManager(false);
+      try {
+        const response = await fetch(
+          `${BASE_URL}/landfill/finduserlandfill/${userId}`,
+          {
+            method: "GET",
+          }
+        );
+        const data = await response.json();
+        if (response.ok) {
+          setLandFillDetails(data.data);
+          setLandfillManager(true);
+        } else {
+          console.error("Failed to fetch user's STS:", data.message);
+        }
+      } catch (error) {
+        console.error("Error fetching user's STS:", error);
+        setLandfillManager(false);
+      }
+    };
+
+    if (userId) {
+      fetchLandFill();
+    }
+  }, [currentUser._id]);
+
   return (
     <Sidebar className="w-full md:w-60">
       <Sidebar.Items>
         <Sidebar.ItemGroup className="flex flex-col gap-1">
-        {currentUser && currentUser.isAdmin && (
-            <Link to='/dashboard?tab=dash'>
+          {currentUser && currentUser.isAdmin && (
+            <Link to="/dashboard?tab=dash">
               <Sidebar.Item
-                active={tab === 'dash' || !tab}
+                active={tab === "dash" || !tab}
                 icon={HiChartPie}
-                as='div'
+                as="div"
               >
                 Dashboard
               </Sidebar.Item>
@@ -102,18 +143,19 @@ const DashSidebar = () => {
               Profile
             </Sidebar.Item>
           </Link>
-          
           {currentUser.isAdmin && (
-            <Link to="/dashboard?tab=rolesandpermission">
+            <Link to="/dashboard?tab=managers">
               <Sidebar.Item
-                active={tab === "rolesandpermission"}
-                icon={RxAvatar}
+                active={tab === "managers"}
+                icon={GrUserManager}
                 as="div"
               >
-                RolesAndPermission
+                Managers List
               </Sidebar.Item>
             </Link>
           )}
+
+          
           {currentUser.isAdmin && (
             <Link to="/dashboard?tab=users">
               <Sidebar.Item
@@ -138,11 +180,7 @@ const DashSidebar = () => {
           )}
           {currentUser.isAdmin && (
             <Link to="/dashboard?tab=sts">
-              <Sidebar.Item
-                active={tab === "sts"}
-                icon={FaChartArea}
-                as="div"
-              >
+              <Sidebar.Item active={tab === "sts"} icon={FaChartArea} as="div">
                 ManageSTS
               </Sidebar.Item>
             </Link>
@@ -158,6 +196,18 @@ const DashSidebar = () => {
               </Sidebar.Item>
             </Link>
           )}
+          {currentUser.isAdmin && (
+            <Link to="/dashboard?tab=rolesandpermission">
+              <Sidebar.Item
+                active={tab === "rolesandpermission"}
+                icon={RxAvatar}
+                as="div"
+              >
+                RolesAndPermission
+              </Sidebar.Item>
+            </Link>
+          )}
+          
           {isstsManager && (
             <Link to="/dashboard?tab=userSTS">
               <Sidebar.Item
@@ -169,11 +219,24 @@ const DashSidebar = () => {
               </Sidebar.Item>
             </Link>
           )}
-          
-          <Sidebar.Item icon={HiArrowSmRight}
-           className="cursor-pointer"
-           onClick={handleSignOut}
-           >
+
+          {isLandfillManager && (
+            <Link to="/dashboard?tab=userLandfill">
+              <Sidebar.Item
+                active={tab === "userLandfill"}
+                icon={GiIsland}
+                as="div"
+              >
+                ManageLandFill
+              </Sidebar.Item>
+            </Link>
+          )}
+
+          <Sidebar.Item
+            icon={HiArrowSmRight}
+            className="cursor-pointer"
+            onClick={handleSignOut}
+          >
             Sign Out
           </Sidebar.Item>
         </Sidebar.ItemGroup>

@@ -134,7 +134,6 @@ const DashRole = () => {
             <Table.Head>
               <Table.HeadCell>Date created</Table.HeadCell>
               <Table.HeadCell>RoleName</Table.HeadCell>
-              <Table.HeadCell>Delete</Table.HeadCell>
               <Table.HeadCell>Manage</Table.HeadCell>
             </Table.Head>
            {roles.map((role) => ( 
@@ -146,17 +145,7 @@ const DashRole = () => {
                   <Table.Cell>
                     {role.name}
                   </Table.Cell>
-                  <Table.Cell>
-                    <span
-                      onClick={() => {
-                        setShowModal(true);
-                        setRoleIdToDelete(role._id);
-                      }}
-                      className="font-medium text-red-500 hover:underline cursor-pointer"
-                    >
-                      Delete
-                    </span>
-                  </Table.Cell>
+                  
                   <Table.Cell>
                     <Link to={`/dashboard?tab=manageRole&roleId=${role._id}`}>
                       Manage

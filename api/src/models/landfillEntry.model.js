@@ -1,10 +1,9 @@
 import mongoose, { Schema } from 'mongoose';
 
 const landfillEntrySchema = new Schema({
-    truck: {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: 'Vehicle',
-        required: true
+    vehicle_reg_number: {
+        type: Number,
+        required: true,
     },
     weight_of_waste: {
         type: Number,

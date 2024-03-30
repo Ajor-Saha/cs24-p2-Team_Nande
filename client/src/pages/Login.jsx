@@ -36,7 +36,7 @@ const Login = () => {
       const { user, accessToken } = data.data; // Check if accessToken is present in the correct structure
       dispatch(signInSuccess({ user, accessToken }));
 
-      navigate("/");
+      navigate("/dashboard");
     } catch (error) {
       dispatch(signInFailure(error));
     }

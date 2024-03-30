@@ -8,6 +8,7 @@ import {
   getPermissionsForRole,
   getRoleById,
   getRoles,
+  getroleCount,
   updateRole,
 } from "../controllers/role.controller.js";
 
@@ -27,4 +28,7 @@ router
   .route("/roles/:roleId/permissions")
   .put(verifyJWT, deletePermissionForRole);
 
+router
+  .route("/rol")
+  .get(verifyJWT, getroleCount);
 export default router;

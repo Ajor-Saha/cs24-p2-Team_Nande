@@ -1,5 +1,6 @@
 import { Permission } from "../models/permission.model.js";
 import { Role } from "../models/role.model.js";
+import { User } from "../models/user.model.js";
 import { ApiError } from "../utils/ApiError.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
@@ -203,7 +204,60 @@ const deletePermissionForRole = asyncHandler(async (req, res) => {
   return res.status(200).json(new ApiResponse(200, {}, "Permission removed from role successfully"));
 });
 
+const getroleCount = asyncHandler(async (req, res) => {
+  if (!req.user.isAdmin) {
+    throw new ApiError(401, "You are not allowed to see all users");
+  }
+
+
+  try {
+    // Find the roles
+    const adminRole = await Role.findOne({ name: "Admin" });
+    const stsManagerRole = await Role.findOne({ name: "STS Manager" });
+    const landfillManagerRole = await Role.findOne({ name: "LandFill Manager" });
+
+    // Ensure roles are found
+    
+    // Count users by role if role field exists, otherwise count unassigned users
+    const users = await User.find({});
+
+    let adminCount = 0;
+    let stsManagerCount = 0;
+    let landfillManagerCount = 0;
+    let unassignedCount = 0;
+
+    for (const user of users) {
+      if (user.role && user.role.equals(adminRole._id)) {
+        adminCount++;
+      } else if (user.role && user.role.equals(stsManagerRole._id)) {
+        stsManagerCount++;
+      } else if (user.role && user.role.equals(landfillManagerRole._id)) {
+        landfillManagerCount++;
+      } else {
+        unassignedCount++;
+      }
+    }
+
+    // Prepare response data
+    const data = {
+      adminCount,
+      stsManagerCount,
+      landfillManagerCount,
+      unassignedCount,
+    };
+
+    // Send response
+    res.status(200).json(new ApiResponse(200, data, "User counts by role retrieved successfully"));
+  } catch (error) {
+    console.error("Error fetching user counts by role:", error);
+    res.status(error.statusCode || 500).json({
+      success: false,
+      message: error.message || "Failed to fetch user counts by role",
+    });
+  }
+});
+
 
 
 export { addRole, getRoles, updateRole, deleteRole, assignPermissionsToRole,
-getPermissionsForRole, getRoleById, deletePermissionForRole };
+getPermissionsForRole, getRoleById, deletePermissionForRole, getroleCount };

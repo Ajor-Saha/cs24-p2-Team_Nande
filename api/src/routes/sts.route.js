@@ -1,6 +1,6 @@
 import express from "express";
 import { verifyJWT } from "../middleware/auth.middleware.js";
-import { addSTS, addSTSEntry, assignManagerToSTS, deleteManagerSTS, deleteSTS, findSTSEntriesBySTSId, findUserSTS, getAllSTS, getAvailableSTSManager, getSTSByWardNumber } from "../controllers/sts.controller.js";
+import { addSTS, addSTSEntry, assignManagerToSTS, deleteManagerSTS, deleteSTS, findSTSEntriesBySTSId, findUserSTS, getAllSTS, getAvailableSTSManager, getSTSByWardNumber, getSTSDetailsWithTotalWaste, getSTSEntriesForThisWeek, getSTSVehicles } from "../controllers/sts.controller.js";
 
 const router = express.Router();
 router.route("/addsts").post(verifyJWT, addSTS);
@@ -13,5 +13,8 @@ router.route("/getavailablestsmanagers").get(verifyJWT, getAvailableSTSManager);
 router.route("/userstsdetails/:userId").get(findUserSTS);
 router.route("/addstsentry/:sts_id").post(addSTSEntry);
 router.route("/getstsentries/:sts_id").get(findSTSEntriesBySTSId);
+router.route("/getallstswaste").get(verifyJWT, getSTSDetailsWithTotalWaste)
+router.route("/getrecenttransportation").get(verifyJWT, getSTSEntriesForThisWeek);
+router.route("/getvehicleofsts/:ward_number").get(verifyJWT, getSTSVehicles);
 
 export default router;

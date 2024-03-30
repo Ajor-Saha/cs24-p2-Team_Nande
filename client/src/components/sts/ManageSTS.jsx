@@ -21,6 +21,7 @@ const ManageSTS = ({ ward_number }) => {
   const [managersDetails, setManagersDetails] = useState([]);
   const [newSTSManagers, setNewSTSManagers] = useState([]);
   const [stsmanagerId, setDeleteMangerId] = useState(null);
+  const [vehicleDetails, setVehicleDetails] = useState([]);
 
   const fetchSTSByWardNumber = async () => {
     try {
@@ -89,10 +90,28 @@ const ManageSTS = ({ ward_number }) => {
     }
   };
 
+  const fetchStsVehicles = async () => {
+    try {
+      const response = await fetch(`${BASE_URL}/sts/getvehicleofsts/${ward_number}`, {
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+        },
+      });
+      if (!response.ok) {
+        throw new Error("Failed to fetch vehicles Details");
+      }
+      const data = await response.json();
+      setVehicleDetails(data.data);
+    } catch (error) {
+      console.error("Error fetching vehicles details", error);
+    }
+  };
+
   useEffect(() => {
     fetchSTSByWardNumber();
     fetchManagersDetails();
     fetchNewSTSManagers();
+    fetchStsVehicles();
   }, [ward_number, accessToken, managersId]);
 
   const handleChange = (e) => {
@@ -177,7 +196,7 @@ const ManageSTS = ({ ward_number }) => {
       setSuccessMessage(
         data.message || "Manager deleted from STS successfully."
       );
-      
+
       setShowModal(false);
     } catch (error) {
       console.error("Error deleting manager from STS:", error);
@@ -196,7 +215,10 @@ const ManageSTS = ({ ward_number }) => {
         <Tabs aria-label="Full width tabs" style="fullWidth">
           <Tabs.Item active title="STS Information" icon={FaChartArea}>
             <div>
-              <form className="max-w-screen-lg mt-8 mb-2 w-80 sm:w-96">
+              <form
+                className="max-w-screen-lg mt-8 mb-2 w-80 sm:w-96"
+                onSubmit={handleSubmit}
+              >
                 <div className="flex flex-col gap-6 mb-1">
                   <div className="py-2">
                     <h6 className="block -mb-3  py-2 font-sans text-base antialiased font-semibold leading-relaxed tracking-normal text-blue-gray-900">
@@ -248,7 +270,7 @@ const ManageSTS = ({ ward_number }) => {
                 </div>
                 <button
                   className="mt-6 block w-full select-none rounded-lg bg-gray-900 dark:bg-gray-700 py-3 px-6 text-center align-middle font-sans text-xs font-bold uppercase text-white shadow-md shadow-gray-900/10 transition-all hover:shadow-lg hover:shadow-gray-900/20 focus:opacity-[0.85] focus:shadow-none active:opacity-[0.85] active:shadow-none disabled:pointer-events-none disabled:opacity-50 disabled:shadow-none"
-                    
+                  type="submit"
                 >
                   {/* {loading ? "Loading..." : "Update Role"} */}
                   Update sts data
@@ -284,6 +306,27 @@ const ManageSTS = ({ ward_number }) => {
                     </Table.Body>
                   ))}
                 </Table>
+                <div className="py-5">
+                  <h1 className="font-semibold pb-2 text-center">Vehicle List of this STS:</h1>
+                  <Table hoverable className="shadow-md">
+                  <Table.Head>
+                    <Table.HeadCell>Vehicle_reg_number</Table.HeadCell>
+                    <Table.HeadCell>Vehicle Capacity</Table.HeadCell>
+                    <Table.HeadCell>Vehicle Type</Table.HeadCell>
+                  </Table.Head>
+                  {vehicleDetails.map((vehicle) => (
+                    <Table.Body className="divide-y" key={vehicle._id}>
+                      <Table.Row className="bg-white dark:border-gray-700 dark:bg-gray-800">
+                        <Table.Cell>{vehicle.vehicle_reg_number}</Table.Cell>
+                        <Table.Cell>{vehicle.capacity}</Table.Cell>
+                        <Table.Cell>
+                          {vehicle.type}
+                        </Table.Cell>
+                      </Table.Row>
+                    </Table.Body>
+                  ))}
+                </Table>
+                </div>
               </div>
               <Modal
                 show={showModal}

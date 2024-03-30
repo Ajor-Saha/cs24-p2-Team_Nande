@@ -98,19 +98,6 @@ const AddNewVehicle = () => {
               </div>
               <div>
                 <div className="mb-2 block">
-                  <Label htmlFor="capacity" value="capacity" />
-                </div>
-                <TextInput
-                  id="capacity"
-                  name="capacity"
-                  type="number"
-                  placeholder="3,5,7"
-                  onChange={handleChange}
-                  required
-                />
-              </div>
-              <div>
-                <div className="mb-2 block">
                   <Label htmlFor="fuel_cost_loaded" value="fuel_cost_loaded" />
                 </div>
                 <TextInput

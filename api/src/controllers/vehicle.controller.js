@@ -12,19 +12,14 @@ const addVehicle = asyncHandler(async (req, res) => {
   const {
     vehicle_reg_number,
     type,
-    capacity,
     fuel_cost_loaded,
     fuel_cost_unloaded,
   } = req.body;
 
   if (
-    ![
-      vehicle_reg_number,
-      type,
-      capacity,
-      fuel_cost_loaded,
-      fuel_cost_unloaded,
-    ].every((field) => field !== undefined)
+    ![vehicle_reg_number, type, fuel_cost_loaded, fuel_cost_unloaded].every(
+      (field) => field !== undefined
+    )
   ) {
     throw new ApiError(401, "All fields are required");
   }
@@ -37,6 +32,24 @@ const addVehicle = asyncHandler(async (req, res) => {
   ];
   if (!allowedTypes.includes(type)) {
     throw new ApiError(400, "Invalid vehicle type");
+  }
+
+  let capacity;
+  switch (type) {
+    case "Open Truck":
+      capacity = 3;
+      break;
+    case "Dump Truck":
+      capacity = 5;
+      break;
+    case "Compactor":
+      capacity = 7;
+      break;
+    case "Container Carrier":
+      capacity = 15;
+      break;
+    default:
+      throw new ApiError(400, "Invalid vehicle type");
   }
 
   const existingVehicle = await Vehicle.findOne({ vehicle_reg_number });
@@ -60,6 +73,7 @@ const addVehicle = asyncHandler(async (req, res) => {
     .status(201)
     .json(new ApiResponse(200, newVehicle, "Vehicle added successfully"));
 });
+
 
 const getVehicleByRegNumber = asyncHandler(async (req, res) => {
   if (!req.user.isAdmin) {
@@ -97,17 +111,26 @@ const getAllVehicle = asyncHandler(async (req, res) => {
 });
 
 const deleteVehicle = asyncHandler(async (req, res) => {
-  if (!req.user.isAdmin) {
-    throw new ApiError(401, "You are not authorized");
-  }
-
   const { vehicle_reg_number } = req.params;
 
-  const vehicle = await Vehicle.findOneAndDelete({ vehicle_reg_number });
-
+  // Check if the vehicle exists
+  const vehicle = await Vehicle.findOne({ vehicle_reg_number });
   if (!vehicle) {
     throw new ApiError(404, "Vehicle not found");
   }
+
+  // Check if the vehicle is associated with any STS
+  const sts = await STS.findOne({ vehicles: { $in: [vehicle_reg_number] } });
+  if (sts) {
+    // If the vehicle is associated with an STS, remove it from the STS
+    await STS.findOneAndUpdate(
+      { _id: sts._id },
+      { $pull: { vehicles: vehicle_reg_number } }
+    );
+  }
+
+  // Delete the vehicle
+  await Vehicle.findOneAndDelete({ vehicle_reg_number });
 
   return res
     .status(200)

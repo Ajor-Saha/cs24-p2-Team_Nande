@@ -16,6 +16,9 @@ import ManageSTS from "../components/sts/ManageSTS";
 import DashLandFill from "../components/landfill/DashLandFill";
 import ManageLandFill from "../components/landfill/ManageLandFill";
 import ManagerSTS from "../components/sts/ManagerSTS";
+import ManagerLandfill from "../components/landfill/ManagerLandfill";
+import DashboardComp from "../components/admin/DashboardComp";
+import DashManagerList from "../components/managers/DashManagerList";
 
 const Dashboard = () => {
   const dispatch = useDispatch();
@@ -71,7 +74,7 @@ const Dashboard = () => {
     }
   }, [location.search]);
 
- 
+
 
   return (
     
@@ -80,6 +83,8 @@ const Dashboard = () => {
         {/* Sidebar */}
         <DashSidebar />
       </div>
+      {/*Dashboard */}
+      {tab === 'dash' && <DashboardComp />}
       {/* profile... */}
       {tab === 'profile' && <DashProfile />}
       {/*All users */}
@@ -105,6 +110,8 @@ const Dashboard = () => {
       {/*manage Landfill*/}
       {tab == 'manageLandfill' && <ManageLandFill landFill_name={landFill_name} />}
       {tab == 'userSTS' && <ManagerSTS />}
+      {tab == 'userLandfill' && <ManagerLandfill />}
+      {tab == 'managers' && <DashManagerList />}
     </div>
     
   );

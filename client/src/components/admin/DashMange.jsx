@@ -128,7 +128,6 @@ const DashMange = ({ userId }) => {
       }
       const updatedUser = await response.json();
       setUser(updatedUser.data);
-      setRoleId(updatedUser.data.role);
       alert("User updated successfully");
     } catch (error) {
       console.error("Error updating user:", error);
@@ -224,6 +223,9 @@ const DashMange = ({ userId }) => {
                   {loading ? "Loading..." : "Update user"}
                 </button>
               </form>
+              <div className="py-5">
+              
+              </div>
             </div>
           </Tabs.Item>
           <Tabs.Item title="UserRole" icon={MdDashboard}>

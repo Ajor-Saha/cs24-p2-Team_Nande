@@ -2,6 +2,7 @@ import { Role } from "../models/role.model.js";
 import { STS } from "../models/sts.model.js";
 import { STSEntry } from "../models/stsEntry.model.js";
 import { User } from "../models/user.model.js";
+import { Vehicle } from "../models/vehicle.model.js";
 import { ApiError } from "../utils/ApiError.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
@@ -287,6 +288,123 @@ const findSTSEntriesBySTSId = async (req, res) => {
 
 
 
+const getSTSDetailsWithTotalWaste = async (req, res) => {
+  if (!req.user.isAdmin) {
+    throw new ApiError(401, "You are not authorized");
+  }
+  try {
+    // Get the date one month ago
+    const oneMonthAgo = new Date();
+    oneMonthAgo.setMonth(oneMonthAgo.getMonth() - 1);
+
+    // Fetch all STS entries from the STS model
+    const stsEntries = await STS.find({}, '_id ward_number capacity');
+
+    const stsDetailsWithTotalWaste = [];
+
+    // Iterate through each STS entry
+    for (const stsEntry of stsEntries) {
+      // Fetch all STSEntries for the current STS entry created within the last month
+      const stsEntryDetails = await STSEntry.find({
+        sts_id: stsEntry._id,
+        createdAt: { $gte: oneMonthAgo }
+      }, 'weight_of_waste');
+
+      // Calculate total waste for the current STS entry
+      const totalWaste = stsEntryDetails.reduce((total, entry) => total + entry.weight_of_waste, 0);
+
+      // Create an object with ward_number, capacity, and total waste
+      const stsDetail = {
+        ward_number: stsEntry.ward_number,
+        capacity: stsEntry.capacity,
+        totalWaste: totalWaste
+      };
+
+      // Push the result to the array
+      stsDetailsWithTotalWaste.push(stsDetail);
+    }
+
+    // Send the array as a response
+    res.status(201).json(new ApiResponse(201, stsDetailsWithTotalWaste, "STS entries retrieved successfully"));
+  } catch (error) {
+    console.error('Error retrieving STS details with total waste:', error);
+    res.status(500).json({ error: 'Failed to retrieve STS details with total waste' });
+  }
+};
+
+const getSTSEntriesForThisWeek = asyncHandler(async (req, res) => {
+  if (!req.user.isAdmin) {
+    throw new ApiError(401, "You are not authorized");
+  }
+
+  try {
+    const oneWeekAgo = new Date();
+    oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
+
+    const stsEntries = await STSEntry.find({
+      createdAt: { $gte: oneWeekAgo },
+    })
+      .populate({
+        path: "sts_id",
+        select: "ward_number",
+        model: "STS",
+      })
+      .select("sts_id vehicle_reg_number weight_of_waste");
+
+    // Extract relevant data and format the response
+    const formattedData = stsEntries.map((entry) => ({
+      ward_number: entry.sts_id.ward_number,
+      vehicle_reg_number: entry.vehicle_reg_number,
+      weight_of_waste: entry.weight_of_waste,
+    }));
+
+    res.status(201).json(new ApiResponse(201, formattedData, "STS entries retrieved successfully"));
+
+  } catch (error) {
+    console.error("Error fetching STS entries for this week:", error);
+    res.status(500).json({
+      success: false,
+      message: "Failed to fetch STS entries for this week",
+    });
+  }
+});
+
+const getSTSVehicles = asyncHandler(async (req, res) => {
+  if (!req.user.isAdmin) {
+    throw new ApiError(401, "You are not authorized");
+  }
+
+  const { ward_number } = req.params;
+
+  // Find the STS with the given ward number
+  const sts = await STS.findOne({ ward_number });
+
+  if (!sts) {
+    throw new ApiError(404, "STS with that ward number does not exist");
+  }
+
+  // Array to store vehicle details
+  const vehiclesDetails = [];
+
+  // Iterate through each vehicle ID in the STS's vehicles array
+  for (const vehicleId of sts.vehicles) {
+    // Find the vehicle details using the vehicle ID
+    const vehicle = await Vehicle.findOne({ vehicle_reg_number: vehicleId });
+    
+    if (!vehicle) {
+      // If vehicle details are not found, skip to the next vehicle
+      continue;
+    }
+
+    // Push the vehicle details into the array
+    vehiclesDetails.push(vehicle);
+  }
+
+  return res.status(201).json(new ApiResponse(201, vehiclesDetails, `Vehicle details retrieved of ${ward_number} sts  successfully`));
+});
+
+
+
 export {
   addSTS,
   getAllSTS,
@@ -298,4 +416,7 @@ export {
   findUserSTS,
   addSTSEntry,
   findSTSEntriesBySTSId,
+  getSTSDetailsWithTotalWaste,
+  getSTSEntriesForThisWeek,
+  getSTSVehicles
 };
