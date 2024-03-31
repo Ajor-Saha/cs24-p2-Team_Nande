@@ -42,7 +42,10 @@ git clone https://github.com/Ajor-Saha/cs24-p2-Team_Nande.git
 ```
 
 Open terminal and go to project directory by following command
+
+```
 cd cs24-p2-Team_Nande
+```
 
 To open project in vs code  run below command:
 ```bash
@@ -50,7 +53,7 @@ code .
 ```
 
 Now open two vs code integrated terminal using keyboard shortcut:
-" ctrl+shift+` " two times to open two vs-code integrated terminal
+`ctrl+shift+`  two times to open two vs-code integrated terminal
 
 Now, on terminal-1: run following command serially. for backend
 ```bash
