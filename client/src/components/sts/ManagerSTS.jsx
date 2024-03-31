@@ -3,6 +3,7 @@ import { BASE_URL } from "../../apiConfig";
 import { useSelector } from "react-redux";
 import { Button, Label, Table, TextInput } from "flowbite-react";
 import { Link } from "react-router-dom";
+import MapWithRoute from "./MapWithRoute";
 
 const ManagerSTS = () => {
   const { currentUser, accessToken } = useSelector((state) => state.user);
@@ -12,6 +13,10 @@ const ManagerSTS = () => {
   const [loading, setLoading] = useState(false);
   const [stsEntries, setSTSEntries] = useState([]);
   const [error, setError] = useState(null);
+
+  const handleReload = () => {
+    window.location.reload();
+  };
 
   useEffect(() => {
     const userId = currentUser._id;
@@ -100,8 +105,7 @@ const ManagerSTS = () => {
     setLoading(false);
   };
 
-  //console.log(stsEntries);
-
+ 
   return (
     <div className="overflow-x-scroll md:mx-auto p-3 scrollbar scrollbar-track-slate-100 scrollbar-thumb-slate-300 dark:scrollbar-track-slate-700 dark:scrollbar-thumb-slate-500">
       <div>
@@ -195,6 +199,7 @@ const ManagerSTS = () => {
       {stsEntries.length > 0 ? (
         <>
            <h1 className="py-5 text-center">All STSEntry List</h1>
+           <Button onClick={handleReload}>Reload to see the changes</Button>
           <Table hoverable className="shadow-md">
             <Table.Head>
               <Table.HeadCell>Vehicle_reg_number</Table.HeadCell>
@@ -223,8 +228,12 @@ const ManagerSTS = () => {
         <p>You have no entry yet!</p>
       )}
       </div>
+      <div className="py-5">
+        <MapWithRoute />
+      </div>
     </div>
   );
 };
 
 export default ManagerSTS;
+/*AIzaSyAnyAOLqhtDXxiHl5yXUMzZluPqHWCl5lY */

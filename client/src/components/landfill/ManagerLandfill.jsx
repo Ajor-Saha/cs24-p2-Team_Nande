@@ -13,6 +13,10 @@ const ManagerLandfill = () => {
   const [loading, setLoading] = useState(false);
   const [landFillEntries, setLandFillEntries] = useState([]);
 
+  const handleReload = () => {
+    window.location.reload();
+  };
+
   useEffect(() => {
     const userId = currentUser._id;
     const fetchLandFill = async () => {
@@ -132,6 +136,7 @@ const ManagerLandfill = () => {
     <div className="overflow-x-scroll md:mx-auto p-5 scrollbar scrollbar-track-slate-100 scrollbar-thumb-slate-300 dark:scrollbar-track-slate-700 dark:scrollbar-thumb-slate-500">
       <div>
         <h1 className="px-10">Add Detail for a vehicle coming sts</h1>
+        
         <form onSubmit={handleSubmit} className="w-96 px-10">
           <div className="space-y-6">
             <h3 className="text-xl font-medium text-gray-900 dark:text-white">
@@ -221,6 +226,7 @@ const ManagerLandfill = () => {
         {landFillEntries.length > 0 ? (
           <>
             <h1 className="py-5 text-center">All LandFillEntry List</h1>
+            <Button onClick={handleReload}>Reload to see the changes</Button>
             <Table hoverable className="shadow-md">
               <Table.Head>
                 <Table.HeadCell>Vehicle_reg_number</Table.HeadCell>
