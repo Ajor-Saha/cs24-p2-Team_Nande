@@ -250,7 +250,7 @@ const findUserLandfill = asyncHandler(async (req, res) => {
     .json(new ApiResponse(201, landfill, "user Landfill details retrieve successfully"));
 });
 
-const addLandFillEntry = async (req, res) => {
+const addLandFillEntry = asyncHandler(async (req, res) => {
   const { landfill_name } = req.params;
   const {
     vehicle_reg_number,
@@ -292,9 +292,9 @@ const addLandFillEntry = async (req, res) => {
         "Landfill Entry added successfully"
       )
     );
-};
+});
 
-const findLandfillEntries = async (req, res) => {
+const findLandfillEntries = asyncHandler(async (req, res) => {
   try {
     const LandfillEntries = await LandfillEntry.find({});
 
@@ -315,7 +315,7 @@ const findLandfillEntries = async (req, res) => {
     console.error("Error finding LandfillEntries:", error);
     res.status(500).json({ message: "Internal server error" });
   }
-};
+});
 
 const calculateFuelCostAndGeneratePDF = asyncHandler(async (req, res) => {
   try {
@@ -412,61 +412,64 @@ const getTotalWasteCollected = asyncHandler(async (req, res) => {
     );
 });
 
-const calculateFuelCosts = async (req, res) => {
+const calculateFuelCosts = asyncHandler(async (req, res) => {
   if (!req.user.isAdmin) {
     throw new ApiError(401, "You are not authorized");
   }
 
   try {
-    
     const landfillEntries = await LandfillEntry.find({}, 'vehicle_reg_number weight_of_waste distance_traveled');
 
     const fuelCosts = [];
 
     for (const landfillEntry of landfillEntries) {
-      // Fetch vehicle details using vehicle_reg_number
-      const vehicle = await Vehicle.findOne({ vehicle_reg_number: landfillEntry.vehicle_reg_number });
+      try {
+        // Fetch vehicle details using vehicle_reg_number
+        const vehicle = await Vehicle.findOne({ vehicle_reg_number: landfillEntry.vehicle_reg_number });
 
-      if (!vehicle) {
-        throw new ApiError(404, `Vehicle with registration number ${landfillEntry.vehicle_reg_number} not found`);
+        if (!vehicle) {
+          // Skip to the next iteration if the vehicle is not found
+          continue;
+        }
+
+        // Calculate fuel cost based on the formula
+        const { capacity, fuel_cost_loaded, fuel_cost_unloaded } = vehicle;
+        const weight_of_waste = landfillEntry.weight_of_waste;
+        const distance_traveled = landfillEntry.distance_traveled;
+
+        const fuelCost = (fuel_cost_unloaded + (weight_of_waste / capacity) * (fuel_cost_loaded - fuel_cost_unloaded)) * distance_traveled;
+
+        // Create an object with vehicle_reg_number, fuel_cost, and weight_of_waste
+        const fuelCostDetail = {
+          vehicle_reg_number: landfillEntry.vehicle_reg_number,
+          fuel_cost: fuelCost,
+          weight_of_waste: weight_of_waste
+        };
+
+        // Push the result to the array
+        fuelCosts.push(fuelCostDetail);
+      } catch (error) {
+        console.error(`Error processing vehicle ${landfillEntry.vehicle_reg_number}:`, error);
+        // Log the error and continue to the next iteration
+        continue;
       }
-
-      // Calculate fuel cost based on the formula
-      const { capacity, fuel_cost_loaded, fuel_cost_unloaded } = vehicle;
-      const weight_of_waste = landfillEntry.weight_of_waste;
-      const distance_traveled = landfillEntry.distance_traveled;
-
-      const fuelCost = (fuel_cost_unloaded + (weight_of_waste / capacity) * (fuel_cost_loaded - fuel_cost_unloaded))*distance_traveled;
-
-      // Create an object with vehicle_reg_number, fuel_cost, and weight_of_waste
-      const fuelCostDetail = {
-        vehicle_reg_number: landfillEntry.vehicle_reg_number,
-        fuel_cost: fuelCost,
-        weight_of_waste: weight_of_waste
-      };
-
-      // Push the result to the array
-      fuelCosts.push(fuelCostDetail);
     }
 
     // Send the array as a response
-    return res
-    .status(201)
-    .json(
+    return res.status(201).json(
       new ApiResponse(
         201,
         fuelCosts,
         "Fuel cost data retrieve successfully"
       )
-    );  } catch (error) {
+    );
+  } catch (error) {
     console.error('Error calculating fuel costs:', error);
-    if (error instanceof ApiError) {
-      res.status(error.statusCode).json({ success: false, message: error.message });
-    } else {
-      res.status(500).json({ success: false, message: 'Failed to calculate fuel costs' });
-    }
+    res.status(500).json({ success: false, message: 'Failed to calculate fuel costs' });
   }
-};
+});
+
+
 
 export {
   addLandFill,

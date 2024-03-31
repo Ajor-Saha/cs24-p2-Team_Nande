@@ -226,7 +226,7 @@ const findUserSTS = asyncHandler(async (req, res) => {
     .json(new ApiResponse(201, sts, "user STS retrieve successfully"));
 });
 
-const addSTSEntry = async (req, res) => {
+const addSTSEntry =  asyncHandler(async (req, res) => {
   
   const { sts_id } = req.params;
   const {
@@ -264,9 +264,9 @@ const addSTSEntry = async (req, res) => {
   res
     .status(201)
     .json(new ApiResponse(201, newSTSEntry, "STS Entry added successfully"));
-};
+});
 
-const findSTSEntriesBySTSId = async (req, res) => {
+const findSTSEntriesBySTSId =  asyncHandler(async (req, res) => {
   try {
     const { sts_id } = req.params;
 
@@ -284,11 +284,11 @@ const findSTSEntriesBySTSId = async (req, res) => {
     console.error("Error finding STSEntries:", error);
     res.status(500).json({ message: "Internal server error" });
   }
-};
+});
 
 
 
-const getSTSDetailsWithTotalWaste = async (req, res) => {
+const getSTSDetailsWithTotalWaste =  asyncHandler(async (req, res) => {
   if (!req.user.isAdmin) {
     throw new ApiError(401, "You are not authorized");
   }
@@ -330,7 +330,7 @@ const getSTSDetailsWithTotalWaste = async (req, res) => {
     console.error('Error retrieving STS details with total waste:', error);
     res.status(500).json({ error: 'Failed to retrieve STS details with total waste' });
   }
-};
+});
 
 const getSTSEntriesForThisWeek = asyncHandler(async (req, res) => {
   if (!req.user.isAdmin) {
@@ -352,11 +352,15 @@ const getSTSEntriesForThisWeek = asyncHandler(async (req, res) => {
       .select("sts_id vehicle_reg_number weight_of_waste");
 
     // Extract relevant data and format the response
-    const formattedData = stsEntries.map((entry) => ({
-      ward_number: entry.sts_id.ward_number,
-      vehicle_reg_number: entry.vehicle_reg_number,
-      weight_of_waste: entry.weight_of_waste,
-    }));
+    const formattedData = stsEntries.map((entry) => {
+      if (!entry.sts_id) return null; // Skip to the next iteration if sts_id is null or undefined
+      
+      return {
+        ward_number: entry.sts_id.ward_number,
+        vehicle_reg_number: entry.vehicle_reg_number,
+        weight_of_waste: entry.weight_of_waste,
+      };
+    }).filter(entry => entry !== null);
 
     res.status(201).json(new ApiResponse(201, formattedData, "STS entries for this week retrieved successfully"));
 

@@ -215,7 +215,7 @@ const checkVehicleAssignment = asyncHandler(async (req, res) => {
     .json(new ApiResponse(201, sts.ward_number, "Vehicle assigned to STS"));
 });
 
-const assignVehicleToSTS = async (req, res) => {
+const assignVehicleToSTS = asyncHandler(async (req, res) =>  {
   const { ward_number } = req.body;
   const { vehicle_reg_number } = req.params;
 
@@ -248,7 +248,7 @@ const assignVehicleToSTS = async (req, res) => {
   return res
     .status(201)
     .json(new ApiResponse(201, sts, "Vehicle assigned to STS successfully"));
-};
+});
 
 export {
   addVehicle,
