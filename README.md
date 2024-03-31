@@ -69,6 +69,6 @@ cd client
 npm install  
 npm run dev
 ```
+## Data Fetching Issue or Observing Operational Changes in Our App
 
-
-
+If you encounter a data fetching issue or notice operational changes within our web app, please click the reload button located in the header section.
