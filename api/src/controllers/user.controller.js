@@ -37,6 +37,33 @@ const getUsers = asyncHandler(async (req, res) => {
   }
 });
 
+
+const getAllUsers = asyncHandler(async (req, res) => {
+  try {
+    if (!req.user.isAdmin) {
+      throw new ApiError(401, "You are not allowed to see all users");
+    }
+
+    const users = await User.find()
+      
+    const usersWithoutPassword = users.map((user) => {
+      const { password, ...rest } = user._doc;
+      return rest;
+    });
+
+    const totalUsers = await User.countDocuments();
+
+    res.status(201).json({
+      users: usersWithoutPassword,
+      totalUsers,
+    });
+  } catch (error) {
+    console.log("Error message", error);
+  }
+});
+
+
+
 const addNewUser = asyncHandler(async (req, res) => {
   if (!req.user.isAdmin) {
     throw new ApiError(401, "You are not authorized");
@@ -48,7 +75,7 @@ const addNewUser = asyncHandler(async (req, res) => {
   if (
     [fullName, email, username, password].some((field) => field?.trim() === "")
   ) {
-    throw new ApiError(400, "All fields are required");
+    throw new ApiError(401, "All fields are required");
   }
 
   const existedUser = await User.findOne({
@@ -56,7 +83,7 @@ const addNewUser = asyncHandler(async (req, res) => {
   });
 
   if (existedUser) {
-    throw new ApiError(409, "User with email or username already exists");
+    throw new ApiError(401, "User with email or username already exists");
   }
   //console.log(req.files);
 
@@ -72,12 +99,12 @@ const addNewUser = asyncHandler(async (req, res) => {
   );
 
   if (!createdUser) {
-    throw new ApiError(500, "Something went wrong while registering the user");
+    throw new ApiError(401, "Something went wrong while registering the user");
   }
 
   return res
     .status(201)
-    .json(new ApiResponse(200, createdUser, "User created Successfully"));
+    .json(new ApiResponse(201, createdUser, "User created Successfully"));
 });
 
 const getUserById = asyncHandler(async (req, res) => {
@@ -134,7 +161,7 @@ const deleteUser = asyncHandler(async (req, res) => {
     throw new ApiError(401, "User could not be deleted");
   }
 
-  return res.status(200).json(new ApiResponse(200, {}, "User deleted successfully"));
+  return res.status(201).json(new ApiResponse(201, {}, "User deleted successfully"));
 });
 
 
@@ -165,8 +192,8 @@ const updateAccountDetails = asyncHandler(async (req, res) => {
   ).select("-password");
 
   return res
-    .status(200)
-    .json(new ApiResponse(200, user, "Account details updated successfully"));
+    .status(201)
+    .json(new ApiResponse(201, user, "Account details updated successfully"));
 });
 
 const updateUserRoles = asyncHandler(async (req, res) => {
@@ -207,9 +234,9 @@ const updateUserRoles = asyncHandler(async (req, res) => {
   );
 
   return res
-    .status(200)
+    .status(201)
     .json(
-      new ApiResponse(200, updatedUser, "Account details updated successfully")
+      new ApiResponse(201, updatedUser, "User role updated successfully")
     );
 });
 
@@ -239,7 +266,7 @@ const getManagersList = asyncHandler(async (req, res) => {
     return populatedManagers;
   }));
 
-  return res.status(200).json(new ApiResponse(200, populatedStsList.flat(), "Managers list retrieved successfully"));
+  return res.status(201).json(new ApiResponse(201, populatedStsList.flat(), "Sts Managers list retrieved successfully"));
 });
 
 
@@ -266,7 +293,7 @@ const getLandfillManagerList = asyncHandler(async (req, res) => {
     };
   }));
 
-  return res.status(200).json(new ApiResponse(200, populatedLandfillList, "Landfill managers list retrieved successfully"));
+  return res.status(200).json(new ApiResponse(201, populatedLandfillList, "Landfill managers list retrieved successfully"));
 });
 
 
@@ -285,8 +312,23 @@ const getUnassignedUser = asyncHandler(async (req, res) => {
     email: user.email,
   }));
 
-  return res.status(200).json(new ApiResponse(200, userDetails, "Users without role retrieved successfully"));
+  return res.status(201).json(new ApiResponse(201, userDetails, "Users without role retrieved successfully"));
 });
+
+
+const getAllRoles = asyncHandler(async (req, res) => {
+  // Fetch all roles from the database
+  const roles = await Role.find({});
+
+  // Check if any roles were found
+  if (!roles || roles.length === 0) {
+    throw new ApiError(401, "No roles found");
+  }
+
+  // Send the roles in the API response
+  return res.status(201).json(new ApiResponse(201, roles, "All Roles retrieved successfully"));
+});
+
 
 
 export {
@@ -298,5 +340,7 @@ export {
   updateUserRoles,
   getManagersList,
   getLandfillManagerList,
-  getUnassignedUser
+  getUnassignedUser,
+  getAllUsers,
+  getAllRoles
 };

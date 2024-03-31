@@ -9,6 +9,7 @@ import { BASE_URL } from "../apiConfig";
 const Login = () => {
   const [formData, setFormData] = useState({});
   const { loading, error } = useSelector((state) => state.user);
+  const [message, setMessage] = useState(false);
 
   const navigate = useNavigate();
   const dispatch = useDispatch();
@@ -33,9 +34,13 @@ const Login = () => {
         return;
       }
 
+      if (!res.ok) {
+        setMessage(true)
+      }
+
       const { user, accessToken } = data.data; // Check if accessToken is present in the correct structure
       dispatch(signInSuccess({ user, accessToken }));
-
+      setMessage(false);
       navigate("/dashboard");
     } catch (error) {
       dispatch(signInFailure(error));
@@ -55,7 +60,7 @@ const Login = () => {
           ></div>
           <div className="w-full p-8 lg:w-1/2">
             <h2 className="text-2xl font-semibold text-gray-700 text-center">
-              Brand
+            EcoSync
             </h2>
             <p className="text-xl text-gray-600 text-center">Welcome back!</p>
             
@@ -117,8 +122,9 @@ const Login = () => {
               </Link>
               <span className="border-b w-1/5 md:w-1/4"></span>
             </div>
+            <Link to="/forget-password" className="font-semibold">forget password</Link>
             <p className="text-red-700">
-              {error ? error.message || "Something went wrong!" : ""}
+              {error && "Email or password is wrong"}
             </p>
           </div>
         </div>

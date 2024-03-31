@@ -10,6 +10,10 @@ const Header = () => {
       );
     const dispatch = useDispatch();
 
+    const handleReload = () => {
+      window.location.reload();
+    };
+
     const handleSignOut = async () => {
         try {
           const response = await fetch(`${BASE_URL}/auth/logout`, {
@@ -30,7 +34,7 @@ const Header = () => {
           // Optionally display an error message to the user
         }
     };
-   
+  
   return (
     <div className="navbar bg-gray-100  px-5 lg:px-10">
       <div className="flex-1">
@@ -40,8 +44,9 @@ const Header = () => {
         <div className="form-control">
           <input
             type="text"
-            placeholder="Search"
-            className="input input-bordered w-24 md:w-auto"
+            placeholder="Reload"
+            className="input cursor-pointer input-bordered w-24 md:w-auto"
+            onClick={handleReload}
           />
         </div>
         {currentUser ? (
@@ -55,7 +60,7 @@ const Header = () => {
               <div className="w-10 rounded-full">
                 <img
                   alt="Profile Picture"
-                  src="https://daisyui.com/images/stock/photo-1534528741775-53994a69daeb.jpg"
+                  src="https://firebasestorage.googleapis.com/v0/b/e-commerce-f3116.appspot.com/o/avatar.jpeg?alt=media&token=252c7ccc-901e-4567-a57d-56dc0967141a"
                 />
               </div>
             </div>
@@ -69,9 +74,7 @@ const Header = () => {
                   <span className="badge">New</span>
                 </Link>
               </li>
-              <li>
-                <a>Settings</a>
-              </li>
+              
               <li>
                 <a
                 onClick={handleSignOut}

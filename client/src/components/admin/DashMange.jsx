@@ -230,7 +230,7 @@ const DashMange = ({ userId }) => {
           </Tabs.Item>
           <Tabs.Item title="UserRole" icon={MdDashboard}>
             <div className="gap-10">
-              <h3 className="py-5 text-center">Current user role: <b>{currentRole.name}</b></h3>
+              <h3 className="py-5 text-center">Current user role: <b>{currentRole?.name || "Unassigned"}</b></h3>
               <div>
                 <h1 className="text-lg font-semibold text-center">Change User Role</h1>
                 <div>

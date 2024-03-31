@@ -6,6 +6,7 @@ import Home from "./pages/Home";
 import PrivateRoute from "./components/utils/PrivateRoute";
 import Dashboard from "./pages/Dashboard";
 import { useSelector } from "react-redux";
+import ResetPassword from "./pages/ResetPassword";
 
 function App() {
   const {currentUser} = useSelector(state => state.user)
@@ -15,8 +16,9 @@ function App() {
       <Header />
       <Routes>
         <Route path="/" element={<Home />} />
-        <Route path="/login" element={<Login />} />
+        {!currentUser && <Route path="/login" element={<Login />} />}
         <Route path="/signup" element={<SignUp />} />
+        <Route path="/forget-password" element={<ResetPassword />} />
         <Route element={<PrivateRoute /> }>
           <Route path="/dashboard" element={<Dashboard />}/>
         </Route>

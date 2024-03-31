@@ -36,7 +36,7 @@ const DashUsers = () => {
   const fetchUsers = async () => {
     try {
       const response = await fetch(
-        `${BASE_URL}/users?page=${currentPage}&perPage=${perPage}`,
+        `${BASE_URL}/users/user?page=${currentPage}&perPage=${perPage}`,
         {
           headers: {
             Authorization: `Bearer ${accessToken}`,

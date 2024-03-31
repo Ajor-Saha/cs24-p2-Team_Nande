@@ -108,7 +108,7 @@ const DashManagerList = () => {
           <div>
             {landfillManagers.map((landfill, index) => (
               <div key={index}>
-                <h1 className="text-center"> Landfill Name: {landfill.name}</h1>
+                <h1 className="text-center py-2 font-semibold"> Landfill Name: {landfill.name}</h1>
 
                 <Table hoverable className="shadow-md">
                   <Table.Head>

@@ -205,7 +205,7 @@ const ManagerLandfill = () => {
             </div>
             <div className="w-full">
               <Button className="text-lg font-sans" type="submit">
-                {loading ? "Loading..." : "Add STS Entry"}
+                {loading ? "Loading..." : "Add LandFill Entry"}
               </Button>
             </div>
             {errorMessage && (

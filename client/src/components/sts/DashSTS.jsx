@@ -112,7 +112,7 @@ const DashSTS= () => {
           
         </>
       ) : (
-        <p>You have no users yet!</p>
+        <p>You have no sts yet!</p>
       )}
       <Modal
         show={showModal}

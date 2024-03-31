@@ -69,7 +69,7 @@ const getSTSByWardNumber = asyncHandler(async (req, res) => {
 
   return res
     .status(201)
-    .json(new ApiResponse(200, sts, "STS details retrieve successfully"));
+    .json(new ApiResponse(200, sts, `STS ${ward_number} details retrieve successfully`));
 });
 
 const deleteSTS = asyncHandler(async (req, res) => {
@@ -87,7 +87,7 @@ const deleteSTS = asyncHandler(async (req, res) => {
 
   return res
     .status(200)
-    .json(new ApiResponse(200, {}, "STS deleted successfully"));
+    .json(new ApiResponse(200, {}, `STS ${ward_number} deleted successfully`));
 });
 
 const assignManagerToSTS = asyncHandler(async (req, res) => {
@@ -197,7 +197,7 @@ const getAvailableSTSManager = asyncHandler(async (req, res) => {
     return res
       .status(201)
       .json(
-        new ApiResponse(201, stsManagersWithNoMatchingSTS, "STS successfully")
+        new ApiResponse(201, stsManagersWithNoMatchingSTS, "Sts managerList without assign any sts")
       );
   } catch (error) {
     console.error("Error in getting available STS Managers:", error);
@@ -358,7 +358,7 @@ const getSTSEntriesForThisWeek = asyncHandler(async (req, res) => {
       weight_of_waste: entry.weight_of_waste,
     }));
 
-    res.status(201).json(new ApiResponse(201, formattedData, "STS entries retrieved successfully"));
+    res.status(201).json(new ApiResponse(201, formattedData, "STS entries for this week retrieved successfully"));
 
   } catch (error) {
     console.error("Error fetching STS entries for this week:", error);

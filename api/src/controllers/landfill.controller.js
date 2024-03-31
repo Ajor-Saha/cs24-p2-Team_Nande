@@ -188,7 +188,7 @@ const assignManagerToLandfill = asyncHandler(async (req, res) => {
   return res
     .status(200)
     .json(
-      new ApiResponse(200, landfill, "Manager assigned to lanfill successfully")
+      new ApiResponse(200, landfill, "Manager assigned to this lanfill successfully")
     );
 });
 
@@ -228,7 +228,7 @@ const deleteManagerlandfill = asyncHandler(async (req, res) => {
       new ApiResponse(
         201,
         landfill,
-        "Manager removed from Landfill successfully"
+        "Manager removed from this  Landfill successfully"
       )
     );
 });
@@ -247,7 +247,7 @@ const findUserLandfill = asyncHandler(async (req, res) => {
 
   return res
     .status(201)
-    .json(new ApiResponse(201, landfill, "user STS retrieve successfully"));
+    .json(new ApiResponse(201, landfill, "user Landfill details retrieve successfully"));
 });
 
 const addLandFillEntry = async (req, res) => {
