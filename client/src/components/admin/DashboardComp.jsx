@@ -213,7 +213,7 @@ const DashboardComp = () => {
             <Table.Head>
               <Table.HeadCell>Vehicle_reg_number</Table.HeadCell>
               <Table.HeadCell>Weight of Waste</Table.HeadCell>
-              <Table.HeadCell>Fuel Cost</Table.HeadCell>
+              <Table.HeadCell>Fuel Cost(Tk)</Table.HeadCell>
             </Table.Head>
             {allFuelCosts.map((fuel_cost, index) => (
               <Table.Body className="divide-y text-center" key={index}>

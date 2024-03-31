@@ -207,8 +207,8 @@ const DashRoleManage = ({ roleId }) => {
                   <Table.HeadCell>Permission Name</Table.HeadCell>
                   <Table.HeadCell>Add this Permission</Table.HeadCell>
                 </Table.Head>
-                {filteredPermissions.map((permission) => (
-                  <Table.Body className="divide-y" key={permission._id}>
+                {filteredPermissions.map((permission, index) => (
+                  <Table.Body className="divide-y" key={index}>
                     <Table.Row className="bg-white dark:border-gray-700 dark:bg-gray-800">
                       <Table.Cell>{permission.name}</Table.Cell>
                       <Table.Cell>

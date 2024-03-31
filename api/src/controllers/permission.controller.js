@@ -27,7 +27,7 @@ const addPermission = asyncHandler(async (req, res) => {
 
   return res
     .status(201)
-    .json(new ApiResponse(201, permission, "Role created successfully"));
+    .json(new ApiResponse(201, permission, "Permission created successfully"));
 });
 
 const getPermissions = asyncHandler(async (req, res) => {
