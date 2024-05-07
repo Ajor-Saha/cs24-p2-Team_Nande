@@ -33,8 +33,9 @@ const userSchema = new Schema(
       default: false,
     },
     role: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "Role",
+      type: String,
+      enum: ['Admin', 'STS Manager', 'Landfill Manager', 'Unassigned'],
+      default: 'Unassigned',
     },
     password: {
       type: String,
@@ -43,6 +44,10 @@ const userSchema = new Schema(
     refreshToken: {
       type: String,
     },
+    isVerified: {
+      type: Boolean,
+      default: false,
+    }
   },
   { timestamps: true }
 );

@@ -9,6 +9,7 @@ import { LandfillEntry } from "../models/landfillEntry.model.js";
 import PDFDocument from "pdfkit";
 import fs from "fs";
 import path from "path";
+import { STS } from "../models/sts.model.js";
 
 const addLandFill = asyncHandler(async (req, res) => {
   if (!req.user.isAdmin) {
@@ -103,59 +104,38 @@ const getAvailableLandfillManager = asyncHandler(async (req, res) => {
   if (!req.user.isAdmin) {
     throw new ApiError(401, "You are not authorized");
   }
+  
   try {
-    const usersWithRoles = await User.find({ role: { $ne: null } });
-    const landfillManagerRole = await Role.findOne({
-      name: "LandFill Manager",
+    // Find all Landfill documents
+    const allLandfills = await Landfill.find({});
+
+    // Get all unique manager ObjectIds from all Landfill documents
+    const allManagerIds = allLandfills.reduce((acc, landfill) => {
+      landfill.managers.forEach(managerId => {
+        if (!acc.includes(managerId.toString())) {
+          acc.push(managerId.toString());
+        }
+      });
+      return acc;
+    }, []);
+
+    // Find Landfill Managers (users with role "Landfill Manager") who are not assigned to any Landfill
+    const unassignedUsers = await User.find({
+      role: "Landfill Manager",
+      _id: { $nin: allManagerIds }
     });
 
-    if (!landfillManagerRole) {
-      throw new ApiError(401, "Landfill manager role not found");
-    }
-
-    const landfillManagerRoleId = landfillManagerRole._id;
-    const landfillManagerUsers = usersWithRoles.filter((user) =>
-      user.role.equals(landfillManagerRoleId)
-    );
-
-    // Array to store stsManagerUsers with no matching STS managers
-    const landfillManagersWithNoMatchingLandfill = [];
-
-    // Find all STS documents
-    const alllandfill = await Landfill.find({});
-
-    // Iterate over each stsManagerUser and check if its _id matches any manager in STS model
-    for (const landfillManagerUser of landfillManagerUsers) {
-      let matched = false;
-      for (const landfill of alllandfill) {
-        if (landfill.manager.includes(landfillManagerUser._id)) {
-          matched = true;
-          break;
-        }
-      }
-      if (!matched) {
-        landfillManagersWithNoMatchingLandfill.push(landfillManagerUser);
-      }
-    }
-
-    return res
-      .status(201)
-      .json(
-        new ApiResponse(
-          201,
-          landfillManagersWithNoMatchingLandfill,
-          "Available LandFill managers retreive successfully"
-        )
-      );
+    return res.status(200).json(new ApiResponse(200, unassignedUsers, "Available Landfill Managers without assignments"));
   } catch (error) {
-    console.error("Error in getting available STS Managers:", error);
+    console.error("Error in getting available Landfill Managers:", error);
     return res.status(500).json({
       success: false,
-      message: "Failed to get available STS Managers",
+      message: "Failed to get available Landfill Managers",
       error: error.message,
     });
   }
 });
+
 
 const assignManagerToLandfill = asyncHandler(async (req, res) => {
   if (!req.user.isAdmin) {
@@ -171,18 +151,18 @@ const assignManagerToLandfill = asyncHandler(async (req, res) => {
   }
 
   // Check if user exists
-  const user = await User.findById({ _id: userId }).populate("role");
+  const user = await User.findById({ _id: userId })
 
-  if (!user || user.role.name !== "LandFill Manager") {
+  if (!user || user.role !== "Landfill Manager") {
     throw new ApiError(404, "User not found or not an Lanfill Manager");
   }
 
-  if (landfill.manager.includes(userId)) {
+  if (landfill.managers.includes(userId)) {
     throw new ApiError(400, "User is already a manager for this Lanfill");
   }
 
   // Add user as a manager for this STS
-  landfill.manager.push(userId);
+  landfill.managers.push(userId);
   await landfill.save();
 
   return res
@@ -212,12 +192,12 @@ const deleteManagerlandfill = asyncHandler(async (req, res) => {
     throw new ApiError(401, "User not found");
   }
   // Check if the user is a manager for this STS
-  if (!landfill.manager.includes(userId)) {
+  if (!landfill.managers.includes(userId)) {
     throw new ApiError(404, "User is not a manager for this Landfill");
   }
 
   // Remove the user from the managers list of the STS
-  landfill.manager = landfill.manager.filter(
+  landfill.managers = landfill.managers.filter(
     (managerId) => managerId.toString() !== userId
   );
   await landfill.save();
@@ -238,8 +218,8 @@ const findUserLandfill = asyncHandler(async (req, res) => {
 
   // Find STS where the user is a manager
   const landfill = await Landfill.findOne({
-    manager: { $in: [userId] },
-  }).populate("manager");
+    managers: { $in: [userId] },
+  }).populate("managers");
 
   if (!landfill) {
     throw new ApiError(401, "User is not associated with any landfill");
@@ -254,6 +234,7 @@ const addLandFillEntry = asyncHandler(async (req, res) => {
   const { landfill_name } = req.params;
   const {
     vehicle_reg_number,
+    ward_number,
     weight_of_waste,
     time_of_arrival,
     time_of_departure,
@@ -271,9 +252,16 @@ const addLandFillEntry = asyncHandler(async (req, res) => {
   if (!vehicleExist) {
     throw new ApiError(401, "Vehicle not found");
   }
+  
+  const stsExist = await STS.findOne({ ward_number });
+
+  if (!stsExist) {
+    throw new ApiError(401, "STS not found");
+  }
 
   const newLandfillEntry = new LandfillEntry({
     vehicle_reg_number,
+    ward_number,
     weight_of_waste,
     time_of_arrival,
     time_of_departure,
@@ -298,7 +286,7 @@ const findLandfillEntries = asyncHandler(async (req, res) => {
   try {
     const LandfillEntries = await LandfillEntry.find({});
 
-    if (!LandfillEntries || LandfillEntries.length === 0) {
+    if (!LandfillEntries) {
       throw new ApiError(401, "No LandfillEntry found for this Landfill");
     }
 
@@ -316,6 +304,7 @@ const findLandfillEntries = asyncHandler(async (req, res) => {
     res.status(500).json({ message: "Internal server error" });
   }
 });
+
 
 const calculateFuelCostAndGeneratePDF = asyncHandler(async (req, res) => {
   try {

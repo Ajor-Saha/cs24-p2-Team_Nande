@@ -49,7 +49,7 @@ const Login = () => {
 
   return (
    
-      <div className="py-32 lg:py-44 dark:bg-gray-900">
+      <div className="pt-32 lg:py-44 dark:bg-gray-900 min-h-screen">
         <div className="flex bg-white rounded-lg shadow-lg overflow-hidden mx-auto max-w-sm lg:max-w-4xl">
           <div
             className="hidden lg:block lg:w-1/2 bg-cover"

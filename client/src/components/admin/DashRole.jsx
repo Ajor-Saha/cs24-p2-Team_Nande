@@ -119,16 +119,14 @@ const DashRole = () => {
     }
   };
 
-
+  const roleData = ["Admin", "STS Manager", "Landfill Manager"]
 
 
   return (
-    <div className="table-auto overflow-x-scroll md:mx-auto p-3 scrollbar scrollbar-track-slate-100 scrollbar-thumb-slate-300 dark:scrollbar-track-slate-700 dark:scrollbar-thumb-slate-500">
+    <div className="table-auto overflow-x-scroll md:mx-auto px-3 lg:py-3 pb-5 scrollbar scrollbar-track-slate-100 scrollbar-thumb-slate-300 dark:scrollbar-track-slate-700 dark:scrollbar-thumb-slate-500">
       
-      <div className="flex justify-center items-center py-1 mb-1">
-        <AddNewRole />
-      </div>
-      {currentUser.isAdmin && roles.length > 0 ? (
+      <h1 className='text-center font-bold text-lg py-2'>All Available Role</h1>
+      {currentUser.isAdmin  ? (
         <>
           <Table hoverable className="shadow-md">
             <Table.Head>
@@ -136,18 +134,18 @@ const DashRole = () => {
               <Table.HeadCell>RoleName</Table.HeadCell>
               <Table.HeadCell>Manage</Table.HeadCell>
             </Table.Head>
-           {roles.map((role) => ( 
-              <Table.Body className="divide-y" key={role._id}>
+           {roleData.map((role,index) => ( 
+              <Table.Body className="divide-y" key={index}>
                 <Table.Row className="bg-white dark:border-gray-700 dark:bg-gray-800">
                   <Table.Cell>
-                  {new Date(role.createdAt).toLocaleDateString()}
+                   03/05/2024
                   </Table.Cell>
                   <Table.Cell>
-                    {role.name}
+                    {role}
                   </Table.Cell>
                   
                   <Table.Cell>
-                    <Link to={`/dashboard?tab=manageRole&roleId=${role._id}`}>
+                    <Link to={`/dashboard?tab=manageRole&roleName=${role}`} className='text-green-500'>
                       Manage
                     </Link>{" "}
                     {/* Manage field */}
@@ -161,103 +159,7 @@ const DashRole = () => {
       ) : (
         <p>You have no roles yet!</p>
       )}
-      <Modal
-        show={showModal}
-        onClose={() => setShowModal(false)}
-        popup
-        size="md"
-      >
-        <Modal.Header />
-        <Modal.Body>
-          <div className="text-center">
-            <HiOutlineExclamationCircle className="h-14 w-14 text-gray-400 dark:text-gray-200 mb-4 mx-auto" />
-            <h3 className="mb-5 text-lg text-gray-500 dark:text-gray-400">
-              Are you sure you want to delete this role?
-            </h3>
-            <div className="flex justify-center gap-4">
-              <Button color="failure" onClick={handleDeleteRole} >
-                Yes, I'm sure
-              </Button>
-              <Button color="gray" onClick={() => setShowModal(false)}>
-                No, cancel
-              </Button>
-            </div>
-          </div>
-        </Modal.Body>
-      </Modal>
-      <div className='py-5'>
-       <div className='flex justify-center items-center'>
-       <AddNewPermission />
-       </div>
-      {currentUser.isAdmin && permissions.length > 0 ? (
-        <>
-          <Table hoverable className="shadow-md">
-            <Table.Head>
-              <Table.HeadCell>Date created</Table.HeadCell>
-              <Table.HeadCell>PermissionName</Table.HeadCell>
-              <Table.HeadCell>Delete</Table.HeadCell>
-              <Table.HeadCell>Manage</Table.HeadCell>
-            </Table.Head>
-           {permissions.map((permission) => ( 
-              <Table.Body className="divide-y" key={permission._id}>
-                <Table.Row className="bg-white dark:border-gray-700 dark:bg-gray-800">
-                  <Table.Cell>
-                  {new Date(permission.createdAt).toLocaleDateString()}
-                  </Table.Cell>
-                  <Table.Cell>
-                    {permission.name}
-                  </Table.Cell>
-                  <Table.Cell>
-                    <span
-                      onClick={() => {
-                        setShowModal(true);
-                        setPermissionIdToDelete(permission._id);
-                      }}
-                      className="font-medium text-red-500 hover:underline cursor-pointer"
-                    >
-                      Delete
-                    </span>
-                  </Table.Cell>
-                  <Table.Cell>
-                    <Link to={`/dashboard?tab=managePermission&permissionId=${permission._id}`}>
-                      Manage
-                    </Link>{" "}
-                    {/* Manage field */}
-                  </Table.Cell>
-                </Table.Row>
-              </Table.Body>
-             ))} 
-          </Table>
-          
-        </>
-      ) : (
-        <p>You have no permissions yet!</p>
-      )}
-      <Modal
-        show={showModal}
-        onClose={() => setShowModal(false)}
-        popup
-        size="md"
-      >
-        <Modal.Header />
-        <Modal.Body>
-          <div className="text-center">
-            <HiOutlineExclamationCircle className="h-14 w-14 text-gray-400 dark:text-gray-200 mb-4 mx-auto" />
-            <h3 className="mb-5 text-lg text-gray-500 dark:text-gray-400">
-              Are you sure you want to delete this Permission?
-            </h3>
-            <div className="flex justify-center gap-4">
-              <Button color="failure" onClick={handleDeletePermission} >
-                Yes, I'm sure
-              </Button>
-              <Button color="gray" onClick={() => setShowModal(false)}>
-                No, cancel
-              </Button>
-            </div>
-          </div>
-        </Modal.Body>
-      </Modal>
-      </div>
+      
     </div>
   )
 }

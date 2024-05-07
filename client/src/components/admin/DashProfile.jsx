@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { Alert, Avatar, Button, Tabs, TextInput } from "flowbite-react";
+import { Alert, Avatar, Button, Card, Tabs, TextInput } from "flowbite-react";
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import { updateFailure, updateStart } from "../redux/user/userSlice";
@@ -28,6 +28,7 @@ const DashProfile = () => {
   const [isLandfillManager, setLandfillManager] = useState(false);
   const [profileDetails, setProfileDetails] = useState({});
   const [loadingData, setLoadingData] = useState(false)
+  const [address, setAddress] = useState(null);
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.id]: e.target.value });
@@ -92,92 +93,142 @@ const DashProfile = () => {
     }
   };
 
-  useEffect(() => {
-    const userId = currentUser._id;
-    const fetchSTS = async () => {
-      setStsManager(false);
-      try {
-        const response = await fetch(
-          `${BASE_URL}/sts/userstsdetails/${userId}`,
-          {
-            method: "GET",
-          }
-        );
-        const data = await response.json();
-        if (response.ok) {
-          setSTSDetails(data.data);
-          setStsManager(true);
-        } else {
-          console.error("Failed to fetch user's STS:", data.message);
-        }
-      } catch (error) {
-        console.error("Error fetching user's STS:", error);
+  if (currentUser.role === 'STS Manager') {
+    useEffect(() => {
+      const userId = currentUser._id;
+      const fetchSTS = async () => {
         setStsManager(false);
-      }
-    };
-
-    if (userId) {
-      fetchSTS();
-    }
-  }, [currentUser._id]);
-
-  useEffect(() => {
-    const userId = currentUser._id;
-    const fetchLandFill = async () => {
-      setLandfillManager(false);
-      try {
-        const response = await fetch(
-          `${BASE_URL}/landfill/finduserlandfill/${userId}`,
-          {
-            method: "GET",
+        try {
+          const response = await fetch(
+            `${BASE_URL}/sts/userstsdetails/${userId}`,
+            {
+              method: "GET",
+            }
+          );
+          const data = await response.json();
+          if (response.ok) {
+            setSTSDetails(data.data);
+            setStsManager(true);
+          } else {
+            console.error("Failed to fetch user's STS:", data.message);
           }
-        );
-        const data = await response.json();
-        if (response.ok) {
-          setLandFillDetails(data.data);
-          setLandfillManager(true);
-        } else {
-          console.error("Failed to fetch user's STS:", data.message);
+        } catch (error) {
+          console.error("Error fetching user's STS:", error);
+          setStsManager(false);
         }
-      } catch (error) {
-        console.error("Error fetching user's STS:", error);
+      };
+  
+      if (userId) {
+        fetchSTS();
+      }
+    }, [currentUser._id]);
+  
+  }
+  //console.log(currentUser);
+  if (currentUser.role === 'Landfill Manager') {
+    useEffect(() => {
+      const userId = currentUser._id;
+      const fetchLandFill = async () => {
         setLandfillManager(false);
-      }
-    };
-
-    if (userId) {
-      fetchLandFill();
-    }
-  }, [currentUser._id]);
-
-  useEffect(() => {
-    const userId = currentUser._id;
-    const fetchSTS = async () => {
-      setStsManager(false);
-      try {
-        const response = await fetch(
-          `${BASE_URL}/sts/userstsdetails/${userId}`,
-          {
-            method: "GET",
+        try {
+          const response = await fetch(
+            `${BASE_URL}/landfill/finduserlandfill/${userId}`,
+            {
+              method: "GET",
+            }
+          );
+          const data = await response.json();
+          if (response.ok) {
+            setLandFillDetails(data.data);
+            setLandfillManager(true);
+  
+            // Access latitude and longitude only if landFillDetails is available
+            const latitude = data.data?.gps_coordinates?.latitude || 0.0000;
+            const longitude = data.data?.gps_coordinates?.longitude || 0.0000;
+            getAddressFromCoordinates(latitude, longitude);
+          } else {
+            console.error("Failed to fetch user's STS:", data.message);
           }
-        );
-        const data = await response.json();
-        if (response.ok) {
-          setSTSDetails(data.data);
-          setStsManager(true);
-        } else {
-          console.error("Failed to fetch user's STS:", data.message);
+        } catch (error) {
+          console.error("Error fetching user's STS:", error);
+          setLandfillManager(false);
         }
-      } catch (error) {
-        console.error("Error fetching user's STS:", error);
-        setStsManager(false);
+      };
+  
+      if (userId) {
+        fetchLandFill();
       }
-    };
+    }, [currentUser._id]);
+  }
+  
 
-    if (userId) {
-      fetchSTS();
+  
+    
+  if (currentUser.role === 'STS Manager') {
+    useEffect(() => {
+      const userId = currentUser._id;
+      const fetchSTS = async () => {
+        setStsManager(false);
+        try {
+          const response = await fetch(
+            `${BASE_URL}/sts/userstsdetails/${userId}`,
+            {
+              method: "GET",
+            }
+          );
+          const data = await response.json();
+          if (response.ok) {
+            setSTSDetails(data.data);
+            setStsManager(true);
+          } else {
+            console.error("Failed to fetch user's STS:", data.message);
+          }
+        } catch (error) {
+          console.error("Error fetching user's STS:", error);
+          setStsManager(false);
+        }
+      };
+  
+      if (userId) {
+        fetchSTS();
+      }
+    }, [currentUser._id]);
+  }
+
+  
+
+  if (currentUser.role === 'STS Manager') {
+    useEffect(() => {
+      const latitude = stsDetails?.gps_coordinates.latitude || 0.0000;
+      const longitude = stsDetails?.gps_coordinates.longitude || 0.0000;
+      getAddressFromCoordinates(latitude,longitude);
+    }, [stsDetails]);
+  }
+  
+  
+
+  
+   
+  const getAddressFromCoordinates = async (latitude, longitude) => {
+    const apiKey = 'AIzaSyAnyAOLqhtDXxiHl5yXUMzZluPqHWCl5lY';
+    const apiUrl = `https://maps.googleapis.com/maps/api/geocode/json?latlng=${latitude},${longitude}&key=${apiKey}`;
+  
+    try {
+      const response = await fetch(apiUrl);
+      const data = await response.json();
+      
+      if (data.status === 'OK') {
+        setAddress(data.results[0].formatted_address);
+      } else {
+        throw new Error('Failed to fetch address');
+      }
+    } catch (error) {
+      console.error('Error fetching address:', error);
+      return null;
     }
-  }, [currentUser._id]);
+  };
+
+  
 
   useEffect(() => {
     const fetchProfileDetails = async () => {
@@ -210,7 +261,7 @@ const DashProfile = () => {
   }, []);
 
   return (
-    <div className="relative py-14  mx-auto flex flex-col text-gray-700 dark:text-gray-200 bg-transparent shadow-none rounded-xl bg-clip-border">
+    <div className="relative md:py-14 pt-0 pb-5 mx-auto flex flex-col text-gray-700 dark:text-gray-200 bg-transparent shadow-none rounded-xl bg-clip-border">
       <div className="overflow-x-auto">
         <Tabs aria-label="Full width tabs" style="fullWidth">
           <Tabs.Item active title="Profile" icon={HiUserCircle}>
@@ -342,7 +393,7 @@ const DashProfile = () => {
       )}
       <div className="py-5">
         {isstsManager && (
-          <div>
+          <Card className="w-96">
             <p>STS Managers Details</p>
             <p>You are STS manager</p>
             <p>Ward number : {stsDetails?.ward_number}</p>
@@ -350,6 +401,7 @@ const DashProfile = () => {
               Total Manager assigned to this sts is :{" "}
               {stsDetails.managers.length}
             </p>
+            <p>Address of this sts: {address}</p>
             <div>
               <p>
                 Total Vehicle assigned to this sts is:{" "}
@@ -363,27 +415,28 @@ const DashProfile = () => {
                 </div>
               ))}
             </div>
-          </div>
+          </Card>
         )}
       </div>
       <div>
         {isLandfillManager && (
           <div>
-            <div>
-              <p>LandFill Managers Details</p>
+            <Card className="w-96">
+              <p className="font-semibold text-lg">LandFill Managers Details</p>
               <p>You are LandFill manager</p>
-              <p>Landfill Name : {landFillDetails.name}</p>
-              <p>Landfill Capacity: {landFillDetails.capacity}</p>
+              <p><span className="font-semibold">Landfill Name :</span> {landFillDetails.name}</p>
+              <p><span className="font-semibold">Landfill Capacity :</span> {landFillDetails.capacity}</p>
               <p>
-                Total Manager assigned to this sts is :{" "}
-                {landFillDetails.manager.length}
+                <span className="font-semibold">Total Manager assigned to this Landfill is :{" "}</span>
+                {landFillDetails.managers.length}
               </p>
+              <p><span className="font-semibold">Address of this Landfill:</span> {address}</p>
               <p>
-                OperationTimespan of this LandFill:
+                <span className="font-bold">OperationTimespan of this LandFill:</span>{" "}
                 {landFillDetails.operationalTimespan?.startTime}-
                 {landFillDetails.operationalTimespan?.endTime}
               </p>
-            </div>
+              </Card>
           </div>
         )}
       </div>

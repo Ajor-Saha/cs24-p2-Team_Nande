@@ -30,7 +30,7 @@ const landfillSchema = new Schema({
             required: true,
         }
     },
-    manager: [{
+    managers: [{
         type: mongoose.Schema.Types.ObjectId,
         ref: 'User',
     }],

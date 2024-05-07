@@ -17,27 +17,7 @@ const DashMange = ({ userId }) => {
     email: "",
   });
 
-
-  const fetchCurrentUserRole = async (roleId) => {
-    try {
-      setLoading(true);
-      const response = await fetch(`${BASE_URL}/rbac/roles/${roleId}`, {
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
-        },
-      });
-      if (!response.ok) {
-        throw new Error("Failed to fetch currentUser role");
-      }
-      const currentroleData = await response.json();
-      setCurrentRole(currentroleData.data);
-      
-    } catch (error) {
-      console.error("Error fetching current role", error);
-    } finally {
-      setLoading(false);
-    }
-  }
+  
 
   useEffect(() => {
     const fetchUserById = async () => {
@@ -59,7 +39,6 @@ const DashMange = ({ userId }) => {
           email: userData.data.email,
         });
 
-        fetchCurrentUserRole(userData.data.role);
       } catch (error) {
         console.error("Error fetching user details:", error);
       } finally {
@@ -67,33 +46,10 @@ const DashMange = ({ userId }) => {
       }
     };
 
-    const fetchUserRoles = async () => {
-      try {
-        setLoading(true);
-        const response = await fetch(`${BASE_URL}/rbac/roles`, {
-          headers: {
-            Authorization: `Bearer ${accessToken}`,
-          },
-        });
-        if (!response.ok) {
-          throw new Error("Failed to fetch user details");
-        }
-        const rolesData = await response.json();
-        setRoles(rolesData.data);
-        
-      } catch (error) {
-        console.error("Error fetching all roles", error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    
     
 
     if (userId) {
       fetchUserById();
-      fetchUserRoles();
     }
   }, [userId]);
 
@@ -104,8 +60,6 @@ const DashMange = ({ userId }) => {
   if (!user) {
     return <p>User not found</p>;
   }
-
-  
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.id]: e.target.value });
@@ -154,7 +108,7 @@ const DashMange = ({ userId }) => {
       const updatedUser = await response.json();
       setUser(updatedUser.data);
       alert("User role updated successfully");
-      fetchCurrentUserRole(updatedUser.data.role);
+      
     } catch (error) {
       console.error("Error changing user role:", error);
       alert("Failed to change user role");
@@ -163,6 +117,7 @@ const DashMange = ({ userId }) => {
     }
   };
 
+  const rolesData = ["Admin", "STS Manager", "Landfill Manager", "Unassigned"];
 
   return (
     <div className="overflow-x-scroll md:mx-auto p-3 scrollbar scrollbar-track-slate-100 scrollbar-thumb-slate-300 dark:scrollbar-track-slate-700 dark:scrollbar-thumb-slate-500">
@@ -223,16 +178,18 @@ const DashMange = ({ userId }) => {
                   {loading ? "Loading..." : "Update user"}
                 </button>
               </form>
-              <div className="py-5">
-              
-              </div>
+              <div className="py-5"></div>
             </div>
           </Tabs.Item>
           <Tabs.Item title="UserRole" icon={MdDashboard}>
             <div className="gap-10">
-              <h3 className="py-5 text-center">Current user role: <b>{currentRole?.name || "Unassigned"}</b></h3>
+              <h3 className="py-5 text-center">
+                Current user role: <b>{user.role}</b>
+              </h3>
               <div>
-                <h1 className="text-lg font-semibold text-center">Change User Role</h1>
+                <h1 className="text-lg font-semibold text-center">
+                  Change User Role
+                </h1>
                 <div>
                   <Table hoverable className="shadow-md">
                     <Table.Head>
@@ -240,27 +197,22 @@ const DashMange = ({ userId }) => {
                       <Table.HeadCell>RoleName</Table.HeadCell>
                       <Table.HeadCell>Assign</Table.HeadCell>
                     </Table.Head>
-                    {roles.map((role) => (  
-                    <Table.Body className="divide-y" key={role._id} >
-                      <Table.Row className="bg-white dark:border-gray-700 dark:bg-gray-800">
-                        <Table.Cell>
-                        {new Date(role.createdAt).toLocaleDateString()}
-                        </Table.Cell>
-                        <Table.Cell>
-                          {role.name}
-                        </Table.Cell>
-                       
-                        <Table.Cell>
-                          <Button
-                            onClick={() => handleChangeRole(role.name)}
-                          >
-                            Change
-                          </Button>{" "}
-                          {/* Manage field */}
-                        </Table.Cell>
-                      </Table.Row>
-                    </Table.Body>
-                   ))} 
+                    {rolesData.map((role, index) => (
+                      <Table.Body key={index} className="divide-y">
+                        <Table.Row className="bg-white dark:border-gray-700 dark:bg-gray-800">
+                          <Table.Cell>
+                          03/05/2024	
+                          </Table.Cell>
+                          <Table.Cell>{role}</Table.Cell>
+                          <Table.Cell>
+                            <Button onClick={() => handleChangeRole(role)}>
+                              Change
+                            </Button>{" "}
+                            {/* Manage field */}
+                          </Table.Cell>
+                        </Table.Row>
+                      </Table.Body>
+                    ))}
                   </Table>
                 </div>
               </div>

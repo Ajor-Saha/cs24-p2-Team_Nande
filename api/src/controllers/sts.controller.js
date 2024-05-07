@@ -104,9 +104,9 @@ const assignManagerToSTS = asyncHandler(async (req, res) => {
   }
 
   // Check if user exists
-  const user = await User.findById({ _id: userId }).populate("role");
+  const user = await User.findById({ _id: userId });
 
-  if (!user || user.role.name !== "STS Manager") {
+  if (!user || user.role !== "STS Manager") {
     throw new ApiError(404, "User not found or not an STS Manager");
   }
 
@@ -161,44 +161,28 @@ const getAvailableSTSManager = asyncHandler(async (req, res) => {
   if (!req.user.isAdmin) {
     throw new ApiError(401, "You are not authorized");
   }
+
   try {
-    const usersWithRoles = await User.find({ role: { $ne: null } });
-    const stsManagerRole = await Role.findOne({ name: "STS Manager" });
-
-    if (!stsManagerRole) {
-      throw new ApiError(401, "STS manager role not found");
-    }
-
-    const stsManagerRoleId = stsManagerRole._id;
-    const stsManagerUsers = usersWithRoles.filter((user) =>
-      user.role.equals(stsManagerRoleId)
-    );
-
-    // Array to store stsManagerUsers with no matching STS managers
-    const stsManagersWithNoMatchingSTS = [];
-
     // Find all STS documents
     const allSTS = await STS.find({});
 
-    // Iterate over each stsManagerUser and check if its _id matches any manager in STS model
-    for (const stsManagerUser of stsManagerUsers) {
-      let matched = false;
-      for (const sts of allSTS) {
-        if (sts.managers.includes(stsManagerUser._id)) {
-          matched = true;
-          break;
+    // Get all unique managers' ObjectIds from all STS documents
+    const allManagerIds = allSTS.reduce((acc, sts) => {
+      sts.managers.forEach(managerId => {
+        if (!acc.includes(managerId.toString())) {
+          acc.push(managerId.toString());
         }
-      }
-      if (!matched) {
-        stsManagersWithNoMatchingSTS.push(stsManagerUser);
-      }
-    }
+      });
+      return acc;
+    }, []);
 
-    return res
-      .status(201)
-      .json(
-        new ApiResponse(201, stsManagersWithNoMatchingSTS, "Sts managerList without assign any sts")
-      );
+    // Find STS Managers (users with role "STS Manager") who are not assigned to any STS
+    const unassignedUsers = await User.find({
+      role: "STS Manager",
+      _id: { $nin: allManagerIds }
+    });
+
+    return res.status(200).json(new ApiResponse(200, unassignedUsers, "STS Managers without assignments"));
   } catch (error) {
     console.error("Error in getting available STS Managers:", error);
     return res.status(500).json({
@@ -208,6 +192,8 @@ const getAvailableSTSManager = asyncHandler(async (req, res) => {
     });
   }
 });
+
+
 
 const findUserSTS = asyncHandler(async (req, res) => {
   const { userId } = req.params;
@@ -408,6 +394,137 @@ const getSTSVehicles = asyncHandler(async (req, res) => {
 });
 
 
+const STSVehiclesList = asyncHandler(async (req, res) => {
+  const { userId } = req.params;
+
+  // Find the STS where the user is a manager
+  const sts = await STS.findOne({ managers: { $in: [userId] } });
+
+  if (!sts) {
+    throw new ApiError(404, "User is not associated with any STS");
+  }
+
+  // Extract ward number and vehicles from the STS
+  const { ward_number, vehicles } = sts;
+
+  // Find details of each vehicle using vehicle_reg_number
+  const vehiclesDetails = await Vehicle.find({ vehicle_reg_number: { $in: vehicles } });
+
+  return res.status(200).json(new ApiResponse(200, { ward_number, vehiclesDetails }, `Vehicle details retrieved successfully for STS with ward number ${ward_number}`));
+});
+
+const getOptimizedTruck = asyncHandler(async (req, res) => {
+  const { ward_number } = req.params;
+  const { weight_of_waste, distance_traveled } = req.body;
+
+  if (!req.user.role === 'STS Manager') {
+    throw new ApiError(401,"You are not allowed.")
+  }
+
+  try {
+    // Find the STS with the given ward number
+    const sts = await STS.findOne({ ward_number });
+
+    if (!sts) {
+      throw new ApiError(404, "STS with that ward number does not exist");
+    }
+
+    // Extract all vehicle numbers associated with this STS
+    const vehicleNumbers = sts.vehicles;
+
+    // Find all vehicles associated with this STS
+    const vehicles = await Vehicle.find({ vehicle_reg_number: { $in: vehicleNumbers } });
+
+    // Filter vehicles based on capacity
+    const filteredVehicles = vehicles.filter(vehicle => vehicle.capacity >= weight_of_waste);
+
+    // Calculate fuel cost for each vehicle
+    const vehiclesWithFuelCost = filteredVehicles.map(vehicle => {
+      const { fuel_cost_unloaded, fuel_cost_loaded, capacity } = vehicle;
+      const fuelCost = (fuel_cost_unloaded + (weight_of_waste / capacity) * (fuel_cost_loaded - fuel_cost_unloaded)) * distance_traveled;
+      return { ...vehicle._doc, fuelCost };
+    });
+
+    return res.status(200).json(new ApiResponse(200, vehiclesWithFuelCost, `Optimized Vehicle details retrieved successfully for STS with ward number ${ward_number}`));
+  } catch (error) {
+    console.error("Error fetching STS vehicles:", error);
+    return res.status(500).json({ success: false, error: "Internal Server Error" });
+  }
+});
+
+
+const getAllSTSEntries = asyncHandler(async (req, res) => {
+  // Find all STS entries
+  if (!req.user.role === 'Landfill Manager') {
+    throw new ApiError(401, "You are not allowed");
+  }
+
+  const stsEntries = await STSEntry.find();
+
+  // Populate the sts_id field with the corresponding STS's ward_number
+  const populatedEntries = await STSEntry.populate(stsEntries, {
+    path: "sts_id",
+    select: "ward_number",
+  });
+
+  return res.status(200).json(new ApiResponse(200, populatedEntries, `All STS entries retrieved successfully`));
+});
+
+
+const calculateFuelCost = (vehicle, weight_of_waste) => {
+  const { capacity, fuel_cost_unloaded, fuel_cost_loaded } = vehicle;
+  return (fuel_cost_unloaded + (weight_of_waste / capacity) * (fuel_cost_loaded - fuel_cost_unloaded));
+};
+
+const findOptimalVehicles = asyncHandler(async(req,res) => {
+  try {
+    const { ward_number } = req.params;
+    const { totalWaste } = req.body;
+    const sts = await STS.findOne({ ward_number });
+    
+    if (!sts) {
+      throw new ApiError(401, "STS not found");
+    }
+
+    const vehicleNumbers = sts.vehicles;
+
+     // Retrieve the details of vehicles based on the vehicle numbers
+     const vehicles = await Vehicle.find({ vehicle_reg_number: { $in: vehicleNumbers } });
+
+     // Calculate fuel cost per kilo for each vehicle
+     const vehiclesWithFuelCost = vehicles.map(vehicle => ({
+         ...vehicle.toObject(),
+         fuelCostPerKilo: calculateFuelCost(vehicle, totalWaste)
+     }));
+
+     // Sort vehicles by fuel cost per kilo and capacity
+     vehiclesWithFuelCost.sort((a, b) => a.fuelCostPerKilo - b.fuelCostPerKilo || a.capacity - b.capacity);
+
+     // Select the required number of vehicles
+     let selectedVehicles = [];
+     let remainingWaste = totalWaste;
+     for (const vehicle of vehiclesWithFuelCost) {
+         const tripsNeeded = Math.ceil(remainingWaste / vehicle.capacity);
+         const tripsPossible = Math.min(tripsNeeded, 3);
+         const wasteTransferred = tripsPossible * vehicle.capacity;
+         remainingWaste -= wasteTransferred;
+         if (tripsPossible > 0) {
+             selectedVehicles.push({ ...vehicle, trips: tripsPossible });
+         }
+         if (remainingWaste <= 0) break;
+     }
+
+     // Return the selected vehicles
+     return res.status(200).json(new ApiResponse(200, selectedVehicles, `optimized vehicles fetched successfully`));
+
+
+
+
+  } catch (error) {
+    console.error('Error finding optimal vehicles:', error);
+    return res.status(500).json({ error: 'Internal server error' });
+  }
+})
 
 export {
   addSTS,
@@ -422,5 +539,39 @@ export {
   findSTSEntriesBySTSId,
   getSTSDetailsWithTotalWaste,
   getSTSEntriesForThisWeek,
-  getSTSVehicles
+  getSTSVehicles,
+  STSVehiclesList,
+  getOptimizedTruck,
+  getAllSTSEntries,
+  findOptimalVehicles
 };
+
+
+/**
+ vechices sts
+ let numberoftrip = 0
+ then calculate cj using |totalWaste-3*capcity| if totalwaste>3*capcity beshi -> numberoftrip=3
+ else |totalWaste/capcity| else totalWaste -> (numberoftrip = )
+ then calculate 
+ rate = (cj/capcity)(per unit)
+ formula = (rate*cv(capcity)*numberoftrip*d)
+ */
+
+ /*
+ totalwaste;
+ first vehicles fetch
+ triptrack [{
+  id: vehicle_number,
+  trip: 0,
+ }]
+ cj = doc(totalwaste-capcity);
+     if doc(totalwaste) break
+rate = (cj/weight) //sort
+fuelcost = cj*distnce
+
+array.puh(rate, fuelcost, vehicle)
+
+sort(assending(rate)),
+sort(asseding (rate==rate)assencending)
+
+  */

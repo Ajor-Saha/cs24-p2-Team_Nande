@@ -32,8 +32,8 @@ const ManageLandFill = ({ landFill_name }) => {
         throw new Error("Failed to fetch Landfill details");
       }
       const data = await response.json();
-      
-      setManagersId(data.data?.manager);
+     
+      setManagersId(data.data?.managers);
       setName(data.data.name);
       setLandFill(data?.data);
     } catch (error) {
@@ -152,6 +152,8 @@ const ManageLandFill = ({ landFill_name }) => {
       setLoading(false);
     }
   };
+
+  
 
 
   return (

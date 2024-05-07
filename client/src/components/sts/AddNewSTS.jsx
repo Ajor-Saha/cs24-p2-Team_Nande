@@ -47,7 +47,7 @@ const AddNewSTS = () => {
       }
     } catch (error) {
       setLoading(false);
-      setErrorMessage("Failed to create vehicle.");
+      setErrorMessage("Failed to create New STS.");
     }
   };
 
@@ -79,6 +79,7 @@ const AddNewSTS = () => {
                 />
               </div>
               <div>
+                
                 <div className="mb-2 block">
                   <Label htmlFor="capacity" value="Capacity" />
                 </div>
@@ -92,6 +93,7 @@ const AddNewSTS = () => {
                 />
               </div>
               <div>
+              <a className="link link-neutral" href="https://maps.google.com/" target="_blank">Find STS Location</a>
                 <div className="mb-2 block">
                   <Label htmlFor="latitude" value="Latitude" />
                 </div>

@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from "react";
 import { BASE_URL } from "../../apiConfig";
 import { useSelector } from "react-redux";
-import { Button, Label, Table, TextInput } from "flowbite-react";
-import { Link } from "react-router-dom";
+import { Button, Card, Label, Table, TextInput } from "flowbite-react";
+import { Link, useNavigate } from "react-router-dom";
 import MapWithRoute from "./MapWithRoute";
 
 const ManagerSTS = () => {
@@ -11,12 +11,11 @@ const ManagerSTS = () => {
   const [errorMessage, setErrorMessage] = useState("");
   const [successMessage, setSuccessMessage] = useState("");
   const [loading, setLoading] = useState(false);
+  const [loadinga, setLoadinga] = useState(false);
   const [stsEntries, setSTSEntries] = useState([]);
   const [error, setError] = useState(null);
+  const navigate = useNavigate();
 
-  const handleReload = () => {
-    window.location.reload();
-  };
 
   useEffect(() => {
     const userId = currentUser._id;
@@ -45,24 +44,24 @@ const ManagerSTS = () => {
   }, [currentUser._id]);
 
   useEffect(() => {
-    const fetchSTSEntries = async () => {
-      const sts_id = stsDetails._id;
-      setLoading(true);
-      try {
-        const response = await fetch(`${BASE_URL}/sts/getstsentries/${sts_id}`);
-        if (!response.ok) {
-          throw new Error("Failed to fetch STSEntries");
-        }
-        const data = await response.json();
-        setSTSEntries(data.data);
-      } catch (error) {
-        setError(error.message);
-      }
-      setLoading(false);
-    };
-
     fetchSTSEntries();
   }, [stsDetails]);
+
+  const fetchSTSEntries = async () => {
+    const sts_id = stsDetails._id;
+    setLoadinga(true);
+    try {
+      const response = await fetch(`${BASE_URL}/sts/getstsentries/${sts_id}`);
+      if (!response.ok) {
+        throw new Error("Failed to fetch STSEntries");
+      }
+      const data = await response.json();
+      setSTSEntries(data.data);
+    } catch (error) {
+      setError(error.message);
+    }
+    setLoadinga(false);
+  };
 
   const [formData, setFormData] = useState({
     vehicle_reg_number: "",
@@ -95,6 +94,7 @@ const ManagerSTS = () => {
 
       if (res.ok) {
         setSuccessMessage(data.message);
+        fetchSTSEntries();
       } else {
         setErrorMessage(data.message || "An error occurred");
       }
@@ -105,131 +105,145 @@ const ManagerSTS = () => {
     setLoading(false);
   };
 
- 
+  const handleClick = () => {
+    navigate('/dashboard?tab=stsVehicle')
+  }
+  
+  
+
   return (
     <div className="overflow-x-scroll md:mx-auto p-3 scrollbar scrollbar-track-slate-100 scrollbar-thumb-slate-300 dark:scrollbar-track-slate-700 dark:scrollbar-thumb-slate-500">
-      <div>
-        <h1>Add Detail for a vehicle leaving this sts</h1>
-        <form onSubmit={handleSubmit}>
-          <div className="space-y-6">
-            <h3 className="text-xl font-medium text-gray-900 dark:text-white">
-              Add new STS Entry
-            </h3>
-            <div>
-              <div className="mb-2 block">
-                <Label
-                  htmlFor="vehicle_reg_number"
-                  value="Vehicle Registration Number"
+      <div className="flex flex-col justify-center items-center">
+        <div className="gap-5 py-2">
+          <h1 className="text-lg font-semibold py-2">Add Detail for a vehicle leaving this sts</h1>
+          
+            <Button color="gray" pill onClick={handleClick}>Check minimum fuel cost truck before sts entry</Button>
+          
+        </div>
+        <Card className="w-96 lg:w-[500px]">
+          <form onSubmit={handleSubmit}>
+            <div className="space-y-6">
+              <h3 className="text-xl font-medium text-gray-900 dark:text-white">
+                Add new STS Entry
+              </h3>
+              <div>
+                <div className="mb-2 block">
+                  <Label
+                    htmlFor="vehicle_reg_number"
+                    value="Vehicle Registration Number"
+                  />
+                </div>
+                <TextInput
+                  id="vehicle_reg_number"
+                  name="vehicle_reg_number"
+                  placeholder="Enter Vehicle Registration Number"
+                  type="text"
+                  onChange={handleChange}
+                  required
                 />
               </div>
-              <TextInput
-                id="vehicle_reg_number"
-                name="vehicle_reg_number"
-                placeholder="Enter Vehicle Registration Number"
-                type="text"
-                onChange={handleChange}
-                required
-              />
-            </div>
-            <div>
-              <div className="mb-2 block">
-                <Label htmlFor="weight_of_waste" value="Weight of Waste" />
+              <div>
+                <div className="mb-2 block">
+                  <Label htmlFor="weight_of_waste" value="Weight of Waste" />
+                </div>
+                <TextInput
+                  id="weight_of_waste"
+                  name="weight_of_waste"
+                  placeholder="Enter Weight of Waste"
+                  type="number"
+                  onChange={handleChange}
+                  required
+                />
               </div>
-              <TextInput
-                id="weight_of_waste"
-                name="weight_of_waste"
-                placeholder="Enter Weight of Waste"
-                type="number"
-                onChange={handleChange}
-                required
-              />
-            </div>
-            <div>
-              <div className="mb-2 block">
-                <Label htmlFor="time_of_arrival" value="Time of Arrival" />
+              <div>
+                <div className="mb-2 block">
+                  <Label htmlFor="time_of_arrival" value="Time of Arrival" />
+                </div>
+                <TextInput
+                  id="time_of_arrival"
+                  name="time_of_arrival"
+                  type="datetime-local"
+                  onChange={handleChange}
+                  required
+                />
               </div>
-              <TextInput
-                id="time_of_arrival"
-                name="time_of_arrival"
-                type="datetime-local"
-                onChange={handleChange}
-                required
-              />
-            </div>
-            <div>
-              <div className="mb-2 block">
-                <Label htmlFor="time_of_departure" value="Time of Departure" />
+              <div>
+                <div className="mb-2 block">
+                  <Label
+                    htmlFor="time_of_departure"
+                    value="Time of Departure"
+                  />
+                </div>
+                <TextInput
+                  id="time_of_departure"
+                  name="time_of_departure"
+                  type="datetime-local"
+                  onChange={handleChange}
+                  required
+                />
               </div>
-              <TextInput
-                id="time_of_departure"
-                name="time_of_departure"
-                type="datetime-local"
-                onChange={handleChange}
-                required
-              />
-            </div>
-            <div>
-              <div className="mb-2 block">
-                <Label htmlFor="distance_traveled" value="Distance Traveled" />
+              <div>
+                <div className="mb-2 block">
+                  <Label
+                    htmlFor="distance_traveled"
+                    value="Distance Traveled"
+                  />
+                </div>
+                <TextInput
+                  id="distance_traveled"
+                  name="distance_traveled"
+                  placeholder="Enter Distance Traveled"
+                  type="number"
+                  onChange={handleChange}
+                  required
+                />
               </div>
-              <TextInput
-                id="distance_traveled"
-                name="distance_traveled"
-                placeholder="Enter Distance Traveled"
-                type="number"
-                onChange={handleChange}
-                required
-              />
+              <div className="w-full">
+                <Button className="text-lg font-sans" type="submit" disabled={loading}>
+                  {loading ? "Loading..." : "Add STS Entry"}
+                </Button>
+              </div>
+              {errorMessage && (
+                <p className="text-red-500 text-sm mt-2">{errorMessage}</p>
+              )}
+              {successMessage && (
+                <p className="text-green-500 text-sm mt-2">{successMessage}</p>
+              )}
             </div>
-            <div className="w-full">
-              <Button className="text-lg font-sans" type="submit">
-                {loading ? "Loading..." : "Add STS Entry"}
-              </Button>
-            </div>
-            {errorMessage && (
-              <p className="text-red-500 text-sm mt-2">{errorMessage}</p>
-            )}
-            {successMessage && (
-              <p className="text-green-500 text-sm mt-2">{successMessage}</p>
-            )}
-          </div>
-        </form>
+          </form>
+        </Card>
       </div>
       <div className="py-5">
-      {stsEntries.length > 0 ? (
-        <>
-           <h1 className="py-5 text-center">All STSEntry List</h1>
-           <Button onClick={handleReload}>Reload to see the changes</Button>
-          <Table hoverable className="shadow-md">
-            <Table.Head>
-              <Table.HeadCell>Vehicle_reg_number</Table.HeadCell>
-              <Table.HeadCell>Weight_of_waste</Table.HeadCell>
-              <Table.HeadCell>time_of_arrival</Table.HeadCell>
-              <Table.HeadCell>time_of_departure</Table.HeadCell>
-              <Table.HeadCell>distance_traveled</Table.HeadCell>
-              
-            </Table.Head>
-            {stsEntries.map((stEntry) => (
-            <Table.Body className="divide-y" key={stEntry._id}>
-              <Table.Row className="bg-white dark:border-gray-700 dark:bg-gray-800 text-center">
-                <Table.Cell>{stEntry.vehicle_reg_number}</Table.Cell>
-                <Table.Cell>{stEntry.weight_of_waste}</Table.Cell>
-                <Table.Cell>{stEntry.time_of_arrival}</Table.Cell>
-                <Table.Cell>{stEntry.time_of_departure}</Table.Cell>
-                <Table.Cell>{stEntry.distance_traveled}</Table.Cell>
-                
-              </Table.Row>
-            </Table.Body>
-          ))}
-          </Table>
-          
-        </>
-      ) : (
-        <p>You have no entry yet!</p>
-      )}
+      <h1 className="py-5 text-center font-bold text-lg">All STSEntry List</h1>
+        {stsEntries.length > 0 ? (
+          <>
+            <Table hoverable className="shadow-md">
+              <Table.Head>
+                <Table.HeadCell>Vehicle_reg_number</Table.HeadCell>
+                <Table.HeadCell>Weight_of_waste</Table.HeadCell>
+                <Table.HeadCell>time_of_arrival</Table.HeadCell>
+                <Table.HeadCell>time_of_departure</Table.HeadCell>
+                <Table.HeadCell>distance_traveled</Table.HeadCell>
+              </Table.Head>
+              {stsEntries.map((stEntry) => (
+                <Table.Body className="divide-y" key={stEntry._id}>
+                  <Table.Row className="bg-white dark:border-gray-700 dark:bg-gray-800 text-center">
+                    <Table.Cell>{stEntry.vehicle_reg_number}</Table.Cell>
+                    <Table.Cell>{stEntry.weight_of_waste}</Table.Cell>
+                    <Table.Cell>{stEntry.time_of_arrival}</Table.Cell>
+                    <Table.Cell>{stEntry.time_of_departure}</Table.Cell>
+                    <Table.Cell>{stEntry.distance_traveled}</Table.Cell>
+                  </Table.Row>
+                </Table.Body>
+              ))}
+            </Table>
+          </>
+        ) : (
+          <p>You have no entry yet!</p>
+        )}
       </div>
       <div className="py-5">
-        <MapWithRoute />
+        <MapWithRoute/>
       </div>
     </div>
   );

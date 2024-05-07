@@ -57,13 +57,15 @@ services:
     # specify environment variables for the api service
     # for demo purposes, we're using a local mongodb instance
     environment: 
-      MONGODB_URI: mongodb+srv://ajor123:NandePan@ajor123.qvctqss.mongodb.net/
+      MONGODB_URI: mongodb+srv://ajor123:Pan123@ajor123.57ovnz2.mongodb.net/
       PORT: 4000
       CORS_ORIGIN: "*"
       ACCESS_TOKEN_SECRET: srjfeojfoejfwojfoejf@@32eefdjejfAA
       ACCESS_TOKEN_EXPIRY: 7d
       REFRESH_TOKEN_SECRET: chai-aur-backend
       REFRESH_TOKEN_EXPIRY: 10d
+      EMAIL_USER: sokarama79@gmail.com
+      EMAIL_PASS: fhpdfacvxkrgfbmo
     
     # establish docker compose watch mode for the api service
     develop:

@@ -93,7 +93,8 @@ const DashUsers = () => {
               <Table.HeadCell>User image</Table.HeadCell>
               <Table.HeadCell>Username</Table.HeadCell>
               <Table.HeadCell>Email</Table.HeadCell>
-              <Table.HeadCell>Admin</Table.HeadCell>
+              <Table.HeadCell>Verified</Table.HeadCell>
+              <Table.HeadCell>Role</Table.HeadCell>
               <Table.HeadCell>Delete</Table.HeadCell>
               <Table.HeadCell>Manage</Table.HeadCell>
             </Table.Head>
@@ -113,12 +114,13 @@ const DashUsers = () => {
                   <Table.Cell>{user.username}</Table.Cell>
                   <Table.Cell>{user.email}</Table.Cell>
                   <Table.Cell>
-                    {user.isAdmin ? (
-                      <FaCheck className="text-green-500" />
+                    {user.isVerified ? (
+                      <FaCheck className="text-green-500 text-center" />
                     ) : (
-                      <FaTimes className="text-red-500" />
+                      <FaTimes className="text-red-500 text-center" />
                     )}
                   </Table.Cell>
+                  <Table.Cell>{user.role}</Table.Cell>
                   <Table.Cell>
                     <span
                       onClick={() => {

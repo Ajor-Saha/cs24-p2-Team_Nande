@@ -30,7 +30,7 @@ function SignUp() {
         setError(true);
         return;
       }
-      navigate("/login");
+      navigate(`/verify/${formData.email}`);
     } catch (error) {
       setLoading(false);
       setError(true);
@@ -38,8 +38,8 @@ function SignUp() {
   };
 
   return (
-   
-    <div className="font-sans text-gray-800 dark:text-gray-100 bg-white flex items-center mx-aut  px-4 py-10  dark:bg-gray-900 justify-center">
+  
+    <div className="font-sans text-gray-800 dark:text-gray-100 bg-white flex items-center mx-aut  px-4 py-10 min-h-screen  dark:bg-gray-900 justify-center">
       <div className="max-w-4xl grid md:grid-cols-3 items-center shadow-md rounded-xl overflow-hidden">
         <div className="max-md:order-1 flex flex-col justify-center space-y-16 max-md:mt-16 min-h-full bg-gradient-to-r from-gray-900 to-gray-700 lg:px-8 px-4 py-4">
           <div>

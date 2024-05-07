@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useSelector } from "react-redux";
 import { BASE_URL } from "../../apiConfig";
-import { Button, Label, Select, TextInput } from "flowbite-react";
+import { Button, Card, Label, Select, TextInput } from "flowbite-react";
 
 const ManageVehicle = ({ vehicle_reg_number }) => {
   const [formData, setFormData] = useState({});
@@ -12,7 +12,7 @@ const ManageVehicle = ({ vehicle_reg_number }) => {
   const [vehicle, setVehicle] = useState({});
   const [message, setMessage] = useState("");
   const [vehicleAssignment, setVehicleAssignment] = useState(false);
-  const [ward_number, setWard_number] = useState(0);
+  const [stsDetails, setStsDetails] = useState([]);
 
   useEffect(() => {
     const fetchVehicleByReg = async () => {
@@ -41,8 +41,10 @@ const ManageVehicle = ({ vehicle_reg_number }) => {
 
     if (vehicle_reg_number) {
       fetchVehicleByReg();
+      handleCheckAssignment();
+      fetchSTS();
     }
-  }, [vehicle_reg_number]);
+  }, [vehicle_reg_number, accessToken]);
 
   if (loading) {
     return <p>Loading...</p>;
@@ -121,22 +123,25 @@ const ManageVehicle = ({ vehicle_reg_number }) => {
   };
 
   //console.log(ward_number);
-  const AssignVehicle = async (e) => {
-    e.preventDefault();
+  const AssignVehicle = async (ward_number) => {
     try {
       setLoading(true);
-      const response = await fetch(`${BASE_URL}/vehicle/assignvehicle/${vehicle_reg_number}`, {
-        method: 'PUT',
-        headers: {
-          'Authorization': `Bearer ${accessToken}`,
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({ ward_number: ward_number })
-      });
+      const response = await fetch(
+        `${BASE_URL}/vehicle/assignvehicle/${vehicle_reg_number}`,
+        {
+          method: "PUT",
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ ward_number: ward_number }),
+        }
+      );
       const data = await response.json();
       setLoading(false);
       if (response.ok) {
         setMessage(data.message || "Vehicle assigned to STS successfully");
+        handleCheckAssignment();
       } else {
         setMessage(data.message || "Failed to assign vehicle to STS");
       }
@@ -146,129 +151,164 @@ const ManageVehicle = ({ vehicle_reg_number }) => {
       setLoading(false);
     }
   };
+
+  const fetchSTS = async () => {
+    try {
+      const response = await fetch(
+        `${BASE_URL}/sts/getallsts`,
+        {
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+          },
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error("Failed to fetch users");
+      }
+      const data = await response.json();
+      setStsDetails(data.data);
+      
+    } catch (error) {
+      console.error("Errro fetching users", error);
+    }
+  };
+   
+
+  
   
 
   return (
-    <div className="mx-auto py-5">
-      <form onSubmit={handleSubmit}>
-        <div className="space-y-6">
-          <h3 className="text-xl font-medium text-gray-900 dark:text-white">
-            Update vehicle details
-          </h3>
-          <div className="w-96">
-            <div className="mb-2 block">
-              <Label htmlFor="vehicle_reg_number" value="Vehicle_reg_number" />
+    <div className="table-auto overflow-x-scroll mx-auto p-3 scrollbar scrollbar-track-slate-100 scrollbar-thumb-slate-300 dark:scrollbar-track-slate-700 dark:scrollbar-thumb-slate-500">
+      <Card className="w-96 lg:w-[500px]">
+        <form onSubmit={handleSubmit}>
+          <div className="space-y-6">
+            <h3 className="text-xl font-medium text-gray-900 dark:text-white">
+              Update vehicle details
+            </h3>
+            <div>
+              <div className="mb-2 block">
+                <Label
+                  htmlFor="vehicle_reg_number"
+                  value="Vehicle_reg_number"
+                />
+              </div>
+              <TextInput
+                id="vehicle_reg_number"
+                name="vehicle_reg_number"
+                placeholder="1,2.."
+                type="number"
+                onChange={handleChange}
+                value={formData.vehicle_reg_number || ""}
+                required
+                disabled
+              />
             </div>
-            <TextInput
-              id="vehicle_reg_number"
-              name="vehicle_reg_number"
-              placeholder="1,2.."
-              type="number"
-              onChange={handleChange}
-              value={formData.vehicle_reg_number || ""}
-              required
-              disabled
-            />
-          </div>
-          <div className="max-w-md">
-            <div className="mb-2 block">
-              <Label htmlFor="type" value="Select vehicle type" />
+            <div className="max-w-md">
+              <div className="mb-2 block">
+                <Label htmlFor="type" value="Select vehicle type" />
+              </div>
+              <Select
+                id="type"
+                required
+                onChange={handleChange}
+                value={formData.type || ""}
+              >
+                <option value="Open Truck">Open Truck</option>
+                <option value="Dump Truck">Dump Truck</option>
+                <option value="Compactor">Compactor</option>
+                <option value="Container Carrier">Container Carrier</option>
+              </Select>
             </div>
-            <Select
-              id="type"
-              required
-              onChange={handleChange}
-              value={formData.type || ""}
-            >
-              <option value="Open Truck">Open Truck</option>
-              <option value="Dump Truck">Dump Truck</option>
-              <option value="Compactor">Compactor</option>
-              <option value="Container Carrier">Container Carrier</option>
-            </Select>
-          </div>
-          <div>
-            <div className="mb-2 block">
-              <Label htmlFor="capacity" value="capacity" />
+            <div>
+              <div className="mb-2 block">
+                <Label htmlFor="capacity" value="capacity" />
+              </div>
+              <TextInput
+                id="capacity"
+                name="capacity"
+                type="number"
+                placeholder="3,5,7"
+                onChange={handleChange}
+                value={formData.capacity}
+                required
+              />
             </div>
-            <TextInput
-              id="capacity"
-              name="capacity"
-              type="number"
-              placeholder="3,5,7"
-              onChange={handleChange}
-              value={formData.capacity}
-              required
-            />
-          </div>
-          <div>
-            <div className="mb-2 block">
-              <Label htmlFor="fuel_cost_loaded" value="fuel_cost_loaded" />
+            <div>
+              <div className="mb-2 block">
+                <Label htmlFor="fuel_cost_loaded" value="fuel_cost_loaded" />
+              </div>
+              <TextInput
+                id="fuel_cost_loaded"
+                name="fuel_cost_loaded"
+                type="number"
+                placeholder="10,15,20"
+                onChange={handleChange}
+                value={formData.fuel_cost_loaded}
+                required
+              />
             </div>
-            <TextInput
-              id="fuel_cost_loaded"
-              name="fuel_cost_loaded"
-              type="number"
-              placeholder="10,15,20"
-              onChange={handleChange}
-              value={formData.fuel_cost_loaded}
-              required
-            />
-          </div>
-          <div>
-            <div className="mb-2 block">
-              <Label htmlFor="fuel_cost_unloaded" value="fuel_cost_unloaded" />
+            <div>
+              <div className="mb-2 block">
+                <Label
+                  htmlFor="fuel_cost_unloaded"
+                  value="fuel_cost_unloaded"
+                />
+              </div>
+              <TextInput
+                id="fuel_cost_unloaded"
+                name="fuel_cost_unloaded"
+                type="number"
+                placeholder="10,15,20"
+                onChange={handleChange}
+                value={formData.fuel_cost_unloaded}
+                required
+              />
             </div>
-            <TextInput
-              id="fuel_cost_unloaded"
-              name="fuel_cost_unloaded"
-              type="number"
-              placeholder="10,15,20"
-              onChange={handleChange}
-              value={formData.fuel_cost_unloaded}
-              required
-            />
-          </div>
 
-          <div className="w-full">
-            <Button className="text-lg font-sans" type="submit">
-              {loading ? "Loading..." : "Update Vehicle"}
-            </Button>
-          </div>
-          {errorMessage && (
-            <p className="text-red-500 text-sm mt-2">{errorMessage}</p>
-          )}
-          {successMessage && (
-            <p className="text-green-500 text-sm mt-2">{successMessage}</p>
-          )}
-        </div>
-      </form>
-      <div className="py-5 items-center">
-        <Button onClick={handleCheckAssignment} disabled={loading}>
-          Check Vehicle Assignment
-        </Button>
-        {message && <p className="py-5">{message}</p>}
-        {vehicleAssignment && (
-          <form onSubmit={AssignVehicle}>
-            <div className="mb-2 block">
-              <Label htmlFor="ward_number" value="Ward Number of a STS" />
+            <div className="w-full">
+              <Button className="text-lg font-sans" type="submit">
+                {loading ? "Loading..." : "Update Vehicle"}
+              </Button>
             </div>
-            <TextInput
-              id="capacity"
-              name="capacity"
-              type="number"
-              placeholder="3,5,7..."
-              value={ward_number}
-              onChange={(e) => setWard_number(e.target.value)}
-              required
-            />
-            
-            <Button className="text-lg font-sans mt-5 text-center" type="submit">
-              {loading ? "Loading..." : "Assign this vehicle"}
-            </Button>
-            
-          </form>
+            {errorMessage && (
+              <p className="text-red-500 text-sm mt-2">{errorMessage}</p>
+            )}
+            {successMessage && (
+              <p className="text-green-500 text-sm mt-2">{successMessage}</p>
+            )}
+          </div>
+        </form>
+      </Card>
+      <div className="py-5 items-center">
+        {message && (
+          <Button color="gray" pill className="w-96">
+            {message}
+          </Button>
         )}
-        {message && <p>{message}</p>}
+        {vehicleAssignment && (
+          <div className="overflow-x-auto py-5">
+          <table className="table">
+            {/* head */}
+            <thead>
+              <tr>
+                <th>Ward Number</th>
+                <th>Total Vehicle</th>
+                <th>Assign this vehicle</th>
+              </tr>
+            </thead>
+            <tbody>
+            {stsDetails.map((sts, index) => (
+                  <tr key={index} className={index % 2 === 0 ? "bg-base-200" : ""}>
+                    <td>{sts.ward_number}</td>
+                    <td>{sts.vehicles.length}</td>
+                    <td className="ml-5 text-sm"><Button  color="light" pill onClick={() => AssignVehicle(sts.ward_number)}>Assign</Button></td>
+                  </tr>
+                ))}
+            </tbody>
+          </table>
+        </div>
+        )}
       </div>
     </div>
   );

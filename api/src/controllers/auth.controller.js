@@ -1,7 +1,9 @@
+import { OTP } from "../models/otp.model.js";
 import { User } from "../models/user.model.js";
 import { ApiError } from "../utils/ApiError.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
+import nodemailer from "nodemailer";
 
 const generateAccessAndRefreshTokens = async (userId) => {
   try {
@@ -45,21 +47,73 @@ const registerUser = asyncHandler(async (req, res) => {
     username: username.toLowerCase(),
   });
 
-  const createdUser = await User.findById(user._id).select(
-    "-password -refreshToken"
-  );
+  // Generate OTP (for demo, just using a simple random number)
+  const otp = Math.floor(1000 + Math.random() * 9000);
 
-  if (!createdUser) {
-    throw new ApiError(401, "Something went wrong while registering the user");
+  // Save OTP to database
+  await OTP.create({
+    email,
+    otp,
+  });
+
+  // Send OTP to user's email
+  const transporter = nodemailer.createTransport({
+    service: "gmail",
+    auth: {
+      user: process.env.EMAIL_USER,
+      pass: process.env.EMAIL_PASS,
+    },
+  });
+
+  const mailOptions = {
+    from: process.env.EMAIL_USER,
+    to: email,
+    subject: "Verification OTP",
+    text: `Your OTP is: ${otp}`,
+  };
+
+  transporter.sendMail(mailOptions, (error, info) => {
+    if (error) {
+      console.error(error);
+      throw new ApiError(401, "Failed to send OTP");
+    }
+    console.log("Email sent: " + info.response);
+    return res
+      .status(201)
+      .json(
+        new ApiResponse(
+          201,
+          {},
+          `OTP sent to your ${email}. Verify your account.`
+        )
+      );
+  });
+});
+
+const verifyOTP = asyncHandler(async (req, res) => {
+  const { email, otp } = req.body;
+
+  const otpRecord = await OTP.findOne({ email }).sort({ createdAt: -1 });
+
+  if (!otpRecord || otpRecord.otp !== otp) {
+    throw new ApiError(401, "Invalid OTP");
   }
+
+  await User.findOneAndUpdate({ email }, { isVerified: true });
+
+  
+
+  await OTP.deleteOne({ _id: otpRecord._id });
 
   return res
     .status(201)
-    .json(new ApiResponse(200, createdUser, "User registered Successfully"));
+    .json(new ApiResponse(201, {}, "Account validated successfully"));
 });
 
 const loginUser = asyncHandler(async (req, res) => {
   const { email, username, password } = req.body;
+
+  
 
   if (!email) {
     throw new ApiError(400, "username or email is required");
@@ -68,6 +122,10 @@ const loginUser = asyncHandler(async (req, res) => {
   const user = await User.findOne({
     $or: [{ username }, { email }],
   });
+
+  if (!user.isVerified) {
+    throw new ApiError(401, "You are not verified")
+  }
 
   if (!user) {
     throw new ApiError(404, "User does not exist");
@@ -185,6 +243,99 @@ const updateProfileDetails = asyncHandler(async (req, res) => {
 });
 
 
+const forgetPassword = asyncHandler(async (req, res) => {
+  const { email } = req.body;
+
+  if (!email || email.trim() === "") {
+    throw new ApiError(401, "Email is required");
+  }
+
+  const user = await User.findOne({ email });
+
+  if (!user) {
+    throw new ApiError(401, "User not found");
+  }
+
+  // Generate new OTP
+  const otp = Math.floor(1000 + Math.random() * 9000);
+
+  // Update OTP in the database
+  const findOtp = await OTP.findOne({ email });
+
+  if (!findOtp) {
+     await OTP.create({
+      email,
+      otp
+     })
+  } else {
+    await OTP.findOneAndUpdate({ email }, { otp });
+  }
+
+  // Send OTP to user's email
+  const transporter = nodemailer.createTransport({
+    service: "gmail",
+    auth: {
+      user: process.env.EMAIL_USER,
+      pass: process.env.EMAIL_PASS,
+    },
+  });
+
+  const mailOptions = {
+    from: process.env.EMAIL_USER,
+    to: email,
+    subject: "Verification OTP",
+    text: `Your new OTP is: ${otp}`,
+  };
+
+  transporter.sendMail(mailOptions, (error, info) => {
+    if (error) {
+      console.error(error);
+      throw new ApiError(401, "Failed to send OTP");
+    }
+    console.log("Email sent: " + info.response);
+    return res.status(201).json(new ApiResponse(201, {}, `New OTP sent to your ${email}`));
+  });
+});
+
+const resetPassword = asyncHandler(async (req, res) => {
+  const { email, newPassword } = req.body;
+
+  // Find the user by email
+  const user = await User.findOne({ email });
+
+  // If user not found, return error
+  if (!user) {
+      throw new ApiError(400, "User not found");
+  }
+
+  // Update user's password
+  user.password = newPassword;
+  
+  // Save the updated user (validateBeforeSave set to false to bypass validation)
+  await user.save({ validateBeforeSave: false });
+
+  // Return success response
+  return res.status(200).json(new ApiResponse(200, {}, "Password reset successfully"));
+});
+
+const confirmOTP = asyncHandler(async (req, res) => {
+  const { email, otp } = req.body;
+
+  const otpRecord = await OTP.findOne({ email }).sort({ createdAt: -1 });
+
+  if (!otpRecord || otpRecord.otp !== otp) {
+    throw new ApiError(401, "Invalid OTP");
+  }
+
+
+  await OTP.deleteOne({ _id: otpRecord._id });
+
+  return res
+    .status(201)
+    .json(new ApiResponse(201, {}, "OTP verification Successfull"));
+});
+
+
 
 export {
    generateAccessAndRefreshTokens,
@@ -194,4 +345,8 @@ export {
    changeCurrentPassword,
    getCurrentUser,
    updateProfileDetails,
+   verifyOTP,
+   forgetPassword,
+   resetPassword,
+   confirmOTP
 };

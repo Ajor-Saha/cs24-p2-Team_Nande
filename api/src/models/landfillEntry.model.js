@@ -5,6 +5,10 @@ const landfillEntrySchema = new Schema({
         type: Number,
         required: true,
     },
+    ward_number: {
+        type: Number,
+        required: true,
+    },
     weight_of_waste: {
         type: Number,
         required: true

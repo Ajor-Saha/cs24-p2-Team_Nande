@@ -214,7 +214,7 @@ const ManageSTS = ({ ward_number }) => {
       <div className="overflow-x-auto flex flex-col justify-center items-center">
         <Tabs aria-label="Full width tabs" style="fullWidth">
           <Tabs.Item active title="STS Information" icon={FaChartArea}>
-            <div>
+            <div className="flex flex-col justify-center items-center">
               <form
                 className="max-w-screen-lg mt-8 mb-2 w-80 sm:w-96"
                 onSubmit={handleSubmit}
@@ -277,7 +277,7 @@ const ManageSTS = ({ ward_number }) => {
                 </button>
               </form>
               <div className="py-5">
-                <h3 className="text-center text-gray-800 py-2">
+                <h3 className="text-center text-gray-800 text-lg font-semibold py-2">
                   Managers list for this sts(ward_number is {ward_number})
                 </h3>
                 <Table hoverable className="shadow-md">
@@ -307,7 +307,7 @@ const ManageSTS = ({ ward_number }) => {
                   ))}
                 </Table>
                 <div className="py-5">
-                  <h1 className="font-semibold pb-2 text-center">Vehicle List of this STS:</h1>
+                  <h1 className="font-semibold pb-2 text-center text-lg pt-2">Vehicle List of this STS:</h1>
                   <Table hoverable className="shadow-md">
                   <Table.Head>
                     <Table.HeadCell>Vehicle_reg_number</Table.HeadCell>

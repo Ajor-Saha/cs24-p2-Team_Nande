@@ -62,7 +62,8 @@ const DashLandFill = () => {
       alert("Failed to delete Landfill: " + error.message);
     }
   };
-
+  
+  console.log(landFill);
   //console.log(sts);
  // console.log(landFill);
   return (
@@ -94,7 +95,7 @@ const DashLandFill = () => {
                     {land.operationalTimespan.startTime}-
                     {land.operationalTimespan.endTime}
                   </Table.Cell>
-                  <Table.Cell>{land.manager.length}</Table.Cell>
+                  <Table.Cell>{land.managers.length}</Table.Cell>
                   <Table.Cell>
                     <span
                       onClick={() => {

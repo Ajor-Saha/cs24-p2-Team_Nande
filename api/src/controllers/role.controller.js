@@ -211,14 +211,6 @@ const getroleCount = asyncHandler(async (req, res) => {
 
 
   try {
-    // Find the roles
-    const adminRole = await Role.findOne({ name: "Admin" });
-    const stsManagerRole = await Role.findOne({ name: "STS Manager" });
-    const landfillManagerRole = await Role.findOne({ name: "LandFill Manager" });
-
-    // Ensure roles are found
-    
-    // Count users by role if role field exists, otherwise count unassigned users
     const users = await User.find({});
 
     let adminCount = 0;
@@ -227,11 +219,11 @@ const getroleCount = asyncHandler(async (req, res) => {
     let unassignedCount = 0;
 
     for (const user of users) {
-      if (user.role && user.role.equals(adminRole._id)) {
+      if (user.role === 'Admin') {
         adminCount++;
-      } else if (user.role && user.role.equals(stsManagerRole._id)) {
+      } else if (user.role === 'STS Manager') {
         stsManagerCount++;
-      } else if (user.role && user.role.equals(landfillManagerRole._id)) {
+      } else if (user.role === 'Landfill Manager') {
         landfillManagerCount++;
       } else {
         unassignedCount++;

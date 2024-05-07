@@ -92,6 +92,7 @@ const addNewUser = asyncHandler(async (req, res) => {
     email,
     password,
     username: username.toLowerCase(),
+    isVerified: true,
   });
 
   const createdUser = await User.findById(user._id).select(
@@ -200,44 +201,32 @@ const updateUserRoles = asyncHandler(async (req, res) => {
   if (!req.user.isAdmin) {
     throw new ApiError(401, "You are not allowed");
   }
+  
   const { userId } = req.params;
   const { role } = req.body;
-  const user = await User.findById({ _id: userId });
+  
+  const user = await User.findById(userId);
 
   if (!user) {
     throw new ApiError(401, "User not found");
   }
 
-  const requestedRole = await Role.findOne({ name: role });
-
-  if (!requestedRole) {
-    throw new ApiError(401, `Role ${role} not found`);
-  }
-
-  // Check if the requested role is 'Admin'
-  const isAdminRole = requestedRole.name.toLowerCase() === "admin";
-
-  // If the requested role is 'Admin', update isAdmin field to true
-  if (isAdminRole) {
-    user.isAdmin = true;
-  } else {
-    user.isAdmin = false;
+  // Validate the requested role
+  if (!["Admin", "STS Manager", "Landfill Manager", "Unassigned"].includes(role)) {
+    throw new ApiError(401, `Invalid role: ${role}`);
   }
 
   // Update user's role
-  user.role = requestedRole._id;
+  user.role = role;
+
+  // If the requested role is 'Admin', update isAdmin field to true
+  user.isAdmin = role === "Admin";
 
   await user.save();
 
-  const updatedUser = await User.findById(user._id).select(
-    "-password -refreshToken"
-  );
+  const updatedUser = await User.findById(user._id).select("-password -refreshToken");
 
-  return res
-    .status(201)
-    .json(
-      new ApiResponse(201, updatedUser, "User role updated successfully")
-    );
+  return res.status(201).json(new ApiResponse(201, updatedUser, "User role updated successfully"));
 });
 
 
@@ -275,12 +264,12 @@ const getLandfillManagerList = asyncHandler(async (req, res) => {
     throw new ApiError(401, "You are not allowed");
   }
 
-  const landfillList = await Landfill.find({ manager: { $exists: true, $not: { $size: 0 } } })
-    .select('name manager'); // Select both name and manager fields
+  const landfillList = await Landfill.find({ managers: { $exists: true, $not: { $size: 0 } } })
+    .select('name managers'); // Select both name and manager fields
 
   const populatedLandfillList = await Promise.all(landfillList.map(async (landfill) => {
     // Fetch user details for each manager in the Landfill
-    const populatedManagers = await Promise.all(landfill.manager.map(async (managerId) => {
+    const populatedManagers = await Promise.all(landfill.managers.map(async (managerId) => {
       const manager = await User.findById({ _id:managerId })
         .select('fullName email'); // Assuming user model contains fullName and email
 
@@ -301,9 +290,10 @@ const getUnassignedUser = asyncHandler(async (req, res) => {
   if (!req.user.isAdmin) {
     throw new ApiError(401, "You are not allowed");
   }
-
+   
+  
   // Fetch users where the role field doesn't exist
-  const users = await User.find({ role: { $exists: false } });
+  const users = await User.find({ role: "Unassigned"});
 
   // Extract required user details
   const userDetails = users.map(user => ({

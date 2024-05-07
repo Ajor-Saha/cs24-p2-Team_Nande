@@ -19,6 +19,8 @@ import ManagerSTS from "../components/sts/ManagerSTS";
 import ManagerLandfill from "../components/landfill/ManagerLandfill";
 import DashboardComp from "../components/admin/DashboardComp";
 import DashManagerList from "../components/managers/DashManagerList";
+import STSVehicle from "../components/sts/STSVehicle";
+import VehicleLandFill from "../components/landfill/VehicleLandFill";
 
 const Dashboard = () => {
   const dispatch = useDispatch();
@@ -32,8 +34,7 @@ const Dashboard = () => {
   const location = useLocation();
   const [tab, setTab] = useState("");
   const [userId, setUserId] = useState(""); // State to store userId
-  const [roleId, setRoleId] = useState("");
-  const [permissionId, setPermissionId] = useState("");
+  const [roleName, setRoleName] = useState("");
   const [vehicle_reg_number, setVehicle_reg_number] = useState("");
   const [ward_number, setWard_number] = useState("");
   const [landFill_name, setLandFill_name] = useState("");
@@ -42,8 +43,7 @@ const Dashboard = () => {
     const urlParams = new URLSearchParams(location.search);
     const tabFromUrl = urlParams.get("tab");
     const userIdFromUrl = urlParams.get("userId");
-    const roleIdFromUrl = urlParams.get("roleId"); 
-    const permissionIdFromUrl = urlParams.get("permissionId");
+    const roleNameFromUrl = urlParams.get("roleName"); 
     const vehicle_reg_numberFromUrl = urlParams.get("vehicle_reg_number");
     const ward_numberFromUrl = urlParams.get("ward_number")
     const landfillnameFromUrl = urlParams.get("name");
@@ -54,13 +54,11 @@ const Dashboard = () => {
     if (userIdFromUrl) {
       setUserId(userIdFromUrl); // Set userId state if it exists in the query parameter
     }
-    if (roleIdFromUrl) {
-      setRoleId(roleIdFromUrl);
+    if (roleNameFromUrl) {
+      setRoleName(roleNameFromUrl);
     }
 
-    if (permissionIdFromUrl) {
-      setPermissionId(permissionIdFromUrl)
-    }
+    
 
     if (vehicle_reg_numberFromUrl) {
       setVehicle_reg_number(vehicle_reg_numberFromUrl)
@@ -92,24 +90,25 @@ const Dashboard = () => {
       {/*mange user */}
       {tab === 'manageUser' && <DashMange userId={userId} />}
       {/*mange roles and permission */}
-      {tab == 'rolesandpermission' && <DashRole />}
+      {tab === 'rolesandpermission' && <DashRole />}
       {/*mange roles */}
-      {tab == 'manageRole' && <DashRoleManage roleId={roleId}/>}
-      {/*manage permission */}
-      {tab == 'managePermission' && <DashPermission permissionId={permissionId} />} 
+      {tab === 'manageRole' && <DashRoleManage roleName = {roleName}/>}
+      
       { /* vehicle */}
-      {tab == 'vehicle' && <DashVehicle />}
+      {tab === 'vehicle' && <DashVehicle />}
       {/*manage vehicle */}
-      {tab == 'manageVehicle' && <ManageVehicle vehicle_reg_number={vehicle_reg_number} />}
+      {tab === 'manageVehicle' && <ManageVehicle vehicle_reg_number={vehicle_reg_number} />}
       {/* sts */}
-      {tab == 'sts' && <DashSTS />}
+      {tab === 'sts' && <DashSTS />}
       {/*Manage sts */}
-      {tab == 'manageSTS' && <ManageSTS ward_number={ward_number}/>}
+      {tab === 'manageSTS' && <ManageSTS ward_number={ward_number}/>}
       {/*Landfill*/}
-      {tab == 'landfill' && <DashLandFill />}
+      {tab === 'landfill' && <DashLandFill />}
+      {tab === 'vehicleLandfill' && <VehicleLandFill />}
       {/*manage Landfill*/}
       {tab == 'manageLandfill' && <ManageLandFill landFill_name={landFill_name} />}
       {tab == 'userSTS' && <ManagerSTS />}
+      {tab === 'stsVehicle' && <STSVehicle />}
       {tab == 'userLandfill' && <ManagerLandfill />}
       {tab == 'managers' && <DashManagerList />}
     </div>

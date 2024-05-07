@@ -10,7 +10,7 @@ import {
 import { GrUserManager } from "react-icons/gr";
 import { FaChartArea } from "react-icons/fa6";
 import { MdOutlineFireTruck } from "react-icons/md";
-import { GiIsland } from "react-icons/gi";
+import { GiIsland, GiMineTruck } from "react-icons/gi";
 import { RxAvatar } from "react-icons/rx";
 import { useEffect, useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
@@ -59,66 +59,70 @@ const DashSidebar = () => {
     }
   };
 
-  useEffect(() => {
-    const userId = currentUser._id;
-    const fetchSTS = async () => {
-      setStsManager(false);
-      try {
-        const response = await fetch(
-          `${BASE_URL}/sts/userstsdetails/${userId}`,
-          {
-            method: "GET",
-          }
-        );
-        const data = await response.json();
-        if (response.ok) {
-          setSTSDetails(data.data);
-          setStsManager(true);
-        } else {
-          console.error("Failed to fetch user's STS:", data.message);
-        }
-      } catch (error) {
-        console.error("Error fetching user's STS:", error);
+  if (currentUser.role === "STS Manager") {
+    useEffect(() => {
+      const userId = currentUser._id;
+      const fetchSTS = async () => {
         setStsManager(false);
-      }
-    };
-
-    if (userId) {
-      fetchSTS();
-    }
-  }, [currentUser._id]);
-
-  useEffect(() => {
-    const userId = currentUser._id;
-    const fetchLandFill = async () => {
-      setLandfillManager(false);
-      try {
-        const response = await fetch(
-          `${BASE_URL}/landfill/finduserlandfill/${userId}`,
-          {
-            method: "GET",
+        try {
+          const response = await fetch(
+            `${BASE_URL}/sts/userstsdetails/${userId}`,
+            {
+              method: "GET",
+            }
+          );
+          const data = await response.json();
+          if (response.ok) {
+            setSTSDetails(data.data);
+            setStsManager(true);
+          } else {
+            console.error("Failed to fetch user's STS:", data.message);
           }
-        );
-        const data = await response.json();
-        if (response.ok) {
-          setLandFillDetails(data.data);
-          setLandfillManager(true);
-        } else {
-          console.error("Failed to fetch user's STS:", data.message);
+        } catch (error) {
+          console.error("Error fetching user's STS:", error);
+          setStsManager(false);
         }
-      } catch (error) {
-        console.error("Error fetching user's STS:", error);
-        setLandfillManager(false);
-      }
-    };
+      };
 
-    if (userId) {
-      fetchLandFill();
-    }
-  }, [currentUser._id]);
+      if (userId) {
+        fetchSTS();
+      }
+    }, [currentUser._id]);
+  }
+
+  if (currentUser.role === "Landfill Manager") {
+    useEffect(() => {
+      const userId = currentUser._id;
+      const fetchLandFill = async () => {
+        setLandfillManager(false);
+        try {
+          const response = await fetch(
+            `${BASE_URL}/landfill/finduserlandfill/${userId}`,
+            {
+              method: "GET",
+            }
+          );
+          const data = await response.json();
+          if (response.ok) {
+            setLandFillDetails(data.data);
+            setLandfillManager(true);
+          } else {
+            console.error("Failed to fetch user's STS:", data.message);
+          }
+        } catch (error) {
+          console.error("Error fetching user's STS:", error);
+          setLandfillManager(false);
+        }
+      };
+
+      if (userId) {
+        fetchLandFill();
+      }
+    }, [currentUser._id]);
+  }
 
   return (
-    <Sidebar className="w-full md:w-60">
+    <Sidebar className="w-full md:w-60 min-h-screen">
       <Sidebar.Items>
         <Sidebar.ItemGroup className="flex flex-col gap-1">
           {currentUser && currentUser.isAdmin && (
@@ -155,7 +159,6 @@ const DashSidebar = () => {
             </Link>
           )}
 
-          
           {currentUser.isAdmin && (
             <Link to="/dashboard?tab=users">
               <Sidebar.Item
@@ -207,8 +210,8 @@ const DashSidebar = () => {
               </Sidebar.Item>
             </Link>
           )}
-          
-          {isstsManager && (
+
+          {currentUser.role === "STS Manager" && (
             <Link to="/dashboard?tab=userSTS">
               <Sidebar.Item
                 active={tab === "userSTS"}
@@ -220,7 +223,19 @@ const DashSidebar = () => {
             </Link>
           )}
 
-          {isLandfillManager && (
+          {currentUser.role === "STS Manager" && (
+            <Link to="/dashboard?tab=stsVehicle">
+              <Sidebar.Item
+                active={tab === "stsVehicle"}
+                icon={GiMineTruck}
+                as="div"
+              >
+                Manage Vehicle
+              </Sidebar.Item>
+            </Link>
+          )}
+
+          {currentUser.role === "Landfill Manager" && (
             <Link to="/dashboard?tab=userLandfill">
               <Sidebar.Item
                 active={tab === "userLandfill"}
@@ -228,6 +243,18 @@ const DashSidebar = () => {
                 as="div"
               >
                 ManageLandFill
+              </Sidebar.Item>
+            </Link>
+          )}
+
+          {currentUser.role === "Landfill Manager" && (
+            <Link to="/dashboard?tab=vehicleLandfill">
+              <Sidebar.Item
+                active={tab === "vehicleLandfill"}
+                icon={GiMineTruck}
+                as="div"
+              >
+                Waste and Vehicle 
               </Sidebar.Item>
             </Link>
           )}
