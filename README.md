@@ -11,20 +11,29 @@ docker compose up
 For testing purposes, you can use the following user credentials:
 
 - **STS manager:**
-  - Email: namethree@gmail.com
+  - Email: panberi407@gmail.com
   - Password: abc123
 
 - **Landfill manager:**
-  - Email: namefive@gmail.com
+  - Email: nametwo@gmail.com
   - Password: abc123
 
 - **Admin 1:**
   - Email: ajordev@gmail.com
   - Password: abc123
 
-- **Admin 2:**
-  - Email: namenine@gmail.com
+- **Contractor Manager:**
+  - Email: namefive@gmail.com
   - Password: abc123
+
+- **worker:**
+  - employeeId: 1
+  - Password: abc123
+
+
+
+
+
 
 ## Server URLs
 
