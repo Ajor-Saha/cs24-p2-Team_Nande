@@ -7,6 +7,8 @@ import {
   HiChartPie,
   HiAnnotation,
 } from "react-icons/hi";
+import { FaCreativeCommonsPd } from "react-icons/fa6";
+import { IoIosContract } from "react-icons/io";
 import { GrUserManager } from "react-icons/gr";
 import { FaChartArea } from "react-icons/fa6";
 import { MdOutlineFireTruck } from "react-icons/md";
@@ -235,6 +237,54 @@ const DashSidebar = () => {
             </Link>
           )}
 
+          {currentUser.role === "STS Manager" && (
+            <Link to="/dashboard?tab=manageStsContractors">
+              <Sidebar.Item
+                active={tab === "manageContractor"}
+                icon={GiMineTruck}
+                as="div"
+              >
+                Manage Contractors
+              </Sidebar.Item>
+            </Link>
+          )}
+
+          {currentUser.isAdmin && (
+            <Link to="/dashboard?tab=contractor">
+              <Sidebar.Item
+                active={tab === "contractor"}
+                icon={IoIosContract}
+                as="div"
+              >
+                ManageContructor
+              </Sidebar.Item>
+            </Link>
+          )}
+
+          {currentUser.role === "Contractor Manager" && (
+            <Link to="/dashboard?tab=manageCompany">
+              <Sidebar.Item
+                active={tab === "manageCompany"}
+                icon={FaCreativeCommonsPd}
+                as="div"
+              >
+                ManageCompany
+              </Sidebar.Item>
+            </Link>
+          )}
+
+          {currentUser.role === "Contractor Manager" && (
+            <Link to="/dashboard?tab=vehiclesAndWasteEntry">
+              <Sidebar.Item
+                active={tab === "vehiclesAndWasteEntry"}
+                icon={FaCreativeCommonsPd}
+                as="div"
+              >
+                Vehicles And Waste Entry
+              </Sidebar.Item>
+            </Link>
+          )}
+
           {currentUser.role === "Landfill Manager" && (
             <Link to="/dashboard?tab=userLandfill">
               <Sidebar.Item
@@ -254,7 +304,7 @@ const DashSidebar = () => {
                 icon={GiMineTruck}
                 as="div"
               >
-                Waste and Vehicle 
+                Waste and Vehicle
               </Sidebar.Item>
             </Link>
           )}

@@ -20,6 +20,16 @@ const stsSchema = new Schema({
             required: true
         }
     },
+    operationalTimespan: {
+        startTime: {
+            type: String, 
+            required: true
+        },
+        endTime: {
+            type: String, 
+            required: true
+        }
+    },
     managers: [{
         type: mongoose.Schema.Types.ObjectId,
         ref: 'User'
@@ -27,7 +37,11 @@ const stsSchema = new Schema({
     vehicles: [{
         type: Number, 
         required: true
-    }]
+    }],
+    fine: {
+        type: Number,
+        default: 0,
+    }
 }, { timestamps: true });
 
 

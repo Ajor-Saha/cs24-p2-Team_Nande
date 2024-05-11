@@ -1,6 +1,6 @@
 import express from "express";
 import { verifyJWT } from "../middleware/auth.middleware.js";
-import { STSVehiclesList, addSTS, addSTSEntry, assignManagerToSTS, deleteManagerSTS, deleteSTS, findOptimalVehicles, findSTSEntriesBySTSId, findUserSTS, getAllSTS, getAllSTSEntries, getAvailableSTSManager, getOptimizedTruck, getSTSByWardNumber, getSTSDetailsWithTotalWaste, getSTSEntriesForThisWeek, getSTSVehicles } from "../controllers/sts.controller.js";
+import { STSVehiclesList, addSTS, addSTSEntry, addSTSEntryContractor, assignManagerToSTS, deleteManagerSTS, deleteSTS, fetchContractors, findOptimalVehicles, findSTSEntriesBySTSId, findUserSTS, generateBillForContractor, getAllSTS, getAllSTSEntries, getAllSTSEntryContractor, getAvailableSTSManager, getOptimizedTruck, getSTSByWardNumber, getSTSDetailsWithTotalWaste, getSTSEntriesForThisWeek, getSTSVehicles } from "../controllers/sts.controller.js";
 
 const router = express.Router();
 router.route("/addsts").post(verifyJWT, addSTS);
@@ -20,5 +20,9 @@ router.route("/stsVehicleList/:userId").get(STSVehiclesList);
 router.route("/getOptimizedVehicles/:ward_number").post(verifyJWT, getOptimizedTruck);
 router.route("/getallstsEntries").get(verifyJWT, getAllSTSEntries);
 router.route("/findOptimalVehicles/:ward_number").post(findOptimalVehicles);
+router.route("/addSTSEntryForContractor").post(addSTSEntryContractor);
+router.route("/getstsEntryContractor/:ward_number").get(getAllSTSEntryContractor);
+router.route("/getcontractorByWard/:ward_number").get(fetchContractors);
+router.route("/generateBillForContractor/:contractId").get(generateBillForContractor);
 
 export default router;

@@ -25,6 +25,8 @@ import vehicleRouter from "./routes/vehicle.route.js"
 import stsRouter from "./routes/sts.route.js"
 import landfillRouter from "./routes/landfill.route.js"
 import profileRouter from "./routes/profile.route.js"
+import contractorRouter from  "./routes/contractor.route.js";
+import workerRouter from "./routes/worker.route.js"
 
 app.use("/auth", authRouter);
 app.use("/users", userRouter);
@@ -34,5 +36,7 @@ app.use("/vehicle", vehicleRouter);
 app.use("/sts", stsRouter);
 app.use("/landfill", landfillRouter);
 app.use("/profile", profileRouter);
+app.use("/contractor", contractorRouter);
+app.use("/worker", workerRouter);
 
 export { app }

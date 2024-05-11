@@ -440,7 +440,15 @@ const DashProfile = () => {
           </div>
         )}
       </div>
-      {!isstsManager && !isLandfillManager && !currentUser.isAdmin && (
+      {currentUser.role === 'Contractor Manager' && (
+        <div>
+          <Card className="w-96">
+            <p>Your are contructor manager</p>
+            <p>Company Name: {currentUser?.contructorCompany}</p>
+          </Card>
+        </div>
+      )}
+      {!isstsManager && !isLandfillManager && !currentUser.isAdmin && !currentUser.role === 'Contractor Manager' &&(
         <p>Not assigned</p>
       )}
       {currentUser.isAdmin && (

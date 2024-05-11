@@ -11,6 +11,8 @@ import VerifyAccount from "./pages/VerifyAccount";
 import ConfirmOTP from "./pages/ConfirmOTP";
 import ChangePassword from "./pages/ChangePassword";
 import Footer from "./components/footer/Footer";
+import EmployeeLogin from "./pages/EmployeeLogin";
+import WorkerDashboard from "./pages/WorkerDashboard";
 
 function App() {
   const {currentUser} = useSelector(state => state.user)
@@ -21,7 +23,9 @@ function App() {
       <Routes>
         <Route path="/" element={<Home />} />
         {!currentUser && <Route path="/login" element={<Login />} />}
+        {currentUser && <Route path="/workerDashboard" element={<WorkerDashboard />} />}
         <Route path="/signup" element={<SignUp />} />
+        <Route path="/workerLogin" element={<EmployeeLogin/>} />
         <Route path="/verify/:email" element={<VerifyAccount />} />
         <Route path="/forget-password" element={<ResetPassword />} />
         <Route path="/confirmOTP/:email" element={<ConfirmOTP />} />
@@ -30,7 +34,7 @@ function App() {
           <Route path="/dashboard" element={<Dashboard />}/>
         </Route>
       </Routes>
-      <Footer />
+      
     </BrowserRouter>
   );
 }

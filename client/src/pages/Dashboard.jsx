@@ -21,6 +21,11 @@ import DashboardComp from "../components/admin/DashboardComp";
 import DashManagerList from "../components/managers/DashManagerList";
 import STSVehicle from "../components/sts/STSVehicle";
 import VehicleLandFill from "../components/landfill/VehicleLandFill";
+import DashContractor from "../components/contractor/DashContractor";
+import ManageContractor from "../components/contractor/ManageContractor";
+import ManagerContractor from "../components/contractor/ManagerContractor";
+import VehiclesAndWaste from "../components/contractor/VehiclesAndWaste";
+import STSManagerContractor from "../components/sts/STSManagerContractor";
 
 const Dashboard = () => {
   const dispatch = useDispatch();
@@ -38,6 +43,7 @@ const Dashboard = () => {
   const [vehicle_reg_number, setVehicle_reg_number] = useState("");
   const [ward_number, setWard_number] = useState("");
   const [landFill_name, setLandFill_name] = useState("");
+  const [companyName, setCompanyName] = useState("");
 
   useEffect(() => {
     const urlParams = new URLSearchParams(location.search);
@@ -47,6 +53,7 @@ const Dashboard = () => {
     const vehicle_reg_numberFromUrl = urlParams.get("vehicle_reg_number");
     const ward_numberFromUrl = urlParams.get("ward_number")
     const landfillnameFromUrl = urlParams.get("name");
+    const contructorCompanyNameFromUrl = urlParams.get("companyName");
 
     if (tabFromUrl) {
       setTab(tabFromUrl);
@@ -56,6 +63,10 @@ const Dashboard = () => {
     }
     if (roleNameFromUrl) {
       setRoleName(roleNameFromUrl);
+    }
+
+    if (contructorCompanyNameFromUrl) {
+      setCompanyName(contructorCompanyNameFromUrl);
     }
 
     
@@ -107,10 +118,17 @@ const Dashboard = () => {
       {tab === 'vehicleLandfill' && <VehicleLandFill />}
       {/*manage Landfill*/}
       {tab == 'manageLandfill' && <ManageLandFill landFill_name={landFill_name} />}
-      {tab == 'userSTS' && <ManagerSTS />}
+      {tab === 'userSTS' && <ManagerSTS />}
       {tab === 'stsVehicle' && <STSVehicle />}
-      {tab == 'userLandfill' && <ManagerLandfill />}
-      {tab == 'managers' && <DashManagerList />}
+      {tab === 'userLandfill' && <ManagerLandfill />}
+      {tab === 'managers' && <DashManagerList />}
+      {/*manage Contractor */}
+      {tab === 'contractor' && <DashContractor />}
+      {tab === 'manageContractor' && <ManageContractor companyName={companyName}/>}
+
+      {tab === 'manageCompany' && <ManagerContractor />}
+      {tab === 'vehiclesAndWasteEntry' && <VehiclesAndWaste />}
+      {tab === 'manageStsContractors' && <STSManagerContractor />}
     </div>
     
   );

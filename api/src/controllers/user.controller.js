@@ -212,7 +212,7 @@ const updateUserRoles = asyncHandler(async (req, res) => {
   }
 
   // Validate the requested role
-  if (!["Admin", "STS Manager", "Landfill Manager", "Unassigned"].includes(role)) {
+  if (!["Admin", "STS Manager", "Landfill Manager", "Contractor Manager", "Unassigned"].includes(role)) {
     throw new ApiError(401, `Invalid role: ${role}`);
   }
 

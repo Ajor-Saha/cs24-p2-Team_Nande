@@ -1,11 +1,17 @@
+import { CompanyVehicle } from "../models/companyVehicle.model.js";
+import { Contractor } from "../models/contractor.model.js";
 import { Role } from "../models/role.model.js";
 import { STS } from "../models/sts.model.js";
 import { STSEntry } from "../models/stsEntry.model.js";
+import { STSEntryContractor } from "../models/stsEntryForContractor.js";
 import { User } from "../models/user.model.js";
 import { Vehicle } from "../models/vehicle.model.js";
 import { ApiError } from "../utils/ApiError.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
+import PDFDocument from "pdfkit";
+import fs from "fs";
+import path from "path";
 
 const addSTS = asyncHandler(async (req, res) => {
   if (!req.user.isAdmin) {
@@ -526,6 +532,180 @@ const findOptimalVehicles = asyncHandler(async(req,res) => {
   }
 })
 
+const addSTSEntryContractor = asyncHandler(async (req, res) => {
+  const {
+    timeAndDateOfCollection,
+    amountOfWasteCollected,
+    contractorID,
+    typeOfWasteCollected,
+    designatedSTSForDeposit,
+    vehicleUsedForTransportation
+  } = req.body;
+
+  // Check if all required fields are provided
+  if (!timeAndDateOfCollection || !amountOfWasteCollected || !contractorID || !typeOfWasteCollected || !designatedSTSForDeposit) {
+    throw new ApiError(401, "All fields are required")
+  }
+
+  // Check if the contractor exists
+  const contractor = await Contractor.findOne({ contractId:contractorID });
+  if (!contractor) {
+    throw new ApiError(401, "contractor not found")
+  }
+
+  // Check if the designated STS exists
+  const sts = await STS.findOne({ ward_number: designatedSTSForDeposit });
+  if (!sts) {
+    throw new ApiError(401, "Sts not found")
+  }
+
+  // Check if the vehicle exists in the company vehicles
+  const vehicle = await CompanyVehicle.findOne({ vehicle_reg_number: vehicleUsedForTransportation });
+  if (!vehicle) {
+    throw new ApiError(401, "vehicle not found")
+  }
+
+  // Create a new STS entry for contractor
+  const newSTSEntryContractor = await STSEntryContractor.create({
+    timeAndDateOfCollection,
+    amountOfWasteCollected,
+    contractorID,
+    typeOfWasteCollected,
+    designatedSTSForDeposit,
+    vehicleUsedForTransportation // Assign the vehicle registration number
+  });
+
+  return res.status(200).json(new ApiResponse(200, newSTSEntryContractor, `STSEntryContractor added successfully`));
+
+});
+
+const getAllSTSEntryContractor = asyncHandler(async (req, res) => {
+  const { ward_number } = req.params;
+
+  // Check if ward_number is provided
+  if (!ward_number) {
+    throw new ApiError(400, "Ward number is required");
+  }
+
+  // Find all STS entries for the specified ward_number
+  const stsEntries = await STSEntryContractor.find({ designatedSTSForDeposit: ward_number });
+
+  if (!stsEntries) {
+    // If no entries found, return a 404 status with a message
+    throw new ApiError(404, "No STS entries found for the specified ward number");
+  }
+
+  // Return the found entries
+  return res.status(200).json(new ApiResponse(200, stsEntries, `STS entries retrieved successfully`));
+
+});
+
+const fetchContractors = asyncHandler(async (req, res) => {
+  const { ward_number } = req.params;
+
+  // Check if designatedSTS is provided
+  if (!ward_number) {
+    throw new ApiError(400, "Designated STS field is required");
+  }
+
+  // Find all contractors with the specified designatedSTS
+  const contractors = await Contractor.find({ designatedSTS: ward_number });
+
+  if (!contractors) {
+    // If no contractors found, return a 404 status with a message
+    throw new ApiError(404, "No contractors found for the specified designatedSTS");
+  }
+
+  // Return the found contractors
+  return res.status(200).json(new ApiResponse(200, contractors, `Contractors retrieved successfully based on designatedSTS`));
+
+});
+
+
+const generateBillForContractor = asyncHandler(async (req, res) => {
+  const { contractId } = req.params;
+
+  // Find all STS entries for the given contractor
+  const stsEntries = await STSEntryContractor.find({ contractorID: contractId });
+
+  if (!stsEntries || stsEntries.length === 0) {
+    // If no STS entries found, return a 404 status with a message
+    throw new ApiError(404, "No STS entries found for the specified contractor");
+  }
+
+  // Calculate the total amount of waste collected
+  const totalWasteCollected = stsEntries.reduce((total, entry) => total + entry.amountOfWasteCollected, 0);
+
+  // Find the contractor details
+  const contractor = await Contractor.findOne({ contractId });
+
+  if (!contractor) {
+    // If contractor not found, return a 404 status with a message
+    throw new ApiError(404, "Contractor not found");
+  }
+
+  // Calculate payment per tonnage * total waste collected
+  const totalPayment = contractor.paymentPerTonnage * totalWasteCollected;
+
+  // Calculate required waste per day * payment per tonnage
+  const requiredPayment = contractor.requiredWastePerDay * contractor.paymentPerTonnage;
+
+  // Determine the deficit (if any)
+  const deficit = Math.max(0, requiredPayment - totalPayment);
+
+  // Calculate fine (if deficit)
+  const fine = deficit * 10; // Fine is 10 tk per ton
+
+  // Calculate total bill
+  const totalBill = requiredPayment - fine;
+
+  const paymentPerTon = contractor.paymentPerTonnage;
+  const requiredWaste = contractor.requiredWastePerDay;
+  
+  
+  // Return the bill details
+  const pdfName = generateBillPDF({
+    totalWasteCollected,
+    totalPayment,
+    requiredPayment,
+    deficit,
+    fine,
+    totalBill,
+    paymentPerTon,
+    requiredWaste
+  });  
+
+  const absolutePath = path.resolve(pdfName); // Get absolute path
+  res.sendFile(absolutePath);
+
+
+});
+
+const generateBillPDF = (billData) => {
+  const pdfName = "contractor_bill_report.pdf";
+  const doc = new PDFDocument();
+  doc.pipe(fs.createWriteStream(pdfName));
+
+  // Add content to the PDF document
+  doc.fontSize(16).text("Contractor Bill Report", { align: "center" }).moveDown();
+
+  // Add bill details
+  doc.fontSize(12).text(`Total Waste Collected(tons): ${billData.totalWasteCollected}`).moveDown();
+  doc.fontSize(12).text(`Total Payment(tk): ${billData.totalPayment}`).moveDown();
+  doc.fontSize(12).text(`Required Payment(tk): ${billData.requiredPayment}`).moveDown();
+  doc.fontSize(12).text(`Deficit(tk): ${billData.deficit}`).moveDown();
+  doc.fontSize(12).text(`Fine(tk): ${billData.fine}`).moveDown();
+  doc.fontSize(12).text(`Total Bill(tk): ${billData.totalBill}`).moveDown();
+  doc.fontSize(12).text(`Payment Per Ton(tons): ${billData.paymentPerTon}`).moveDown();
+  doc.fontSize(12).text(`Required Waste Per Day(tons): ${billData.requiredWaste}`).moveDown();
+
+  // Finalize the PDF document
+  doc.end();
+
+  return pdfName;
+};
+
+
 export {
   addSTS,
   getAllSTS,
@@ -543,7 +723,11 @@ export {
   STSVehiclesList,
   getOptimizedTruck,
   getAllSTSEntries,
-  findOptimalVehicles
+  findOptimalVehicles,
+  addSTSEntryContractor,
+  getAllSTSEntryContractor,
+  fetchContractors,
+  generateBillForContractor,
 };
 
 

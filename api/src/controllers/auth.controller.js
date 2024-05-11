@@ -1,5 +1,6 @@
 import { OTP } from "../models/otp.model.js";
 import { User } from "../models/user.model.js";
+import { Worker } from "../models/worker.model.js";
 import { ApiError } from "../utils/ApiError.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
@@ -13,6 +14,24 @@ const generateAccessAndRefreshTokens = async (userId) => {
 
     user.refreshToken = refreshToken;
     await user.save({ validateBeforeSave: false });
+
+    return { accessToken, refreshToken };
+  } catch (error) {
+    throw new ApiError(
+      500,
+      "Something went wrong while generating refresh and access token"
+    );
+  }
+};
+
+const generateAccessAndRefreshTokensForEmploy = async (userId) => {
+  try {
+    const worker = await Worker.findById({ _id: userId });
+    const accessToken = worker.generateAccessToken();
+    const refreshToken = worker.generateRefreshToken();
+
+    worker.refreshToken = refreshToken;
+    await worker.save({ validateBeforeSave: false });
 
     return { accessToken, refreshToken };
   } catch (error) {
@@ -335,7 +354,85 @@ const confirmOTP = asyncHandler(async (req, res) => {
     .json(new ApiResponse(201, {}, "OTP verification Successfull"));
 });
 
+const loginEmploy = asyncHandler(async (req, res) => {
+  const { employeeId, password } = req.body;
 
+  
+
+  if (!employeeId) {
+    throw new ApiError(400, "employee Id  is required");
+  }
+
+  const worker = await Worker.findOne({ employeeId });
+
+ 
+
+  if (!worker) {
+    throw new ApiError(404, "Worker does not exist");
+  }
+
+  const isPasswordValid = await worker.isPasswordCorrect(password);
+
+  if (!isPasswordValid) {
+    throw new ApiError(401, "Invalid user credentials");
+  }
+
+  const { accessToken, refreshToken } = await generateAccessAndRefreshTokensForEmploy(
+    worker._id
+  );
+
+  const loggedInWorker = await Worker.findById(worker._id).select(
+    "-password -refreshToken"
+  );
+
+  const options = {
+    httpOnly: true,
+    secure: true,
+  };
+
+  return res
+    .status(201)
+    .cookie("accessToken", accessToken, options)
+    .cookie("refreshToken", refreshToken, options)
+    .json(
+      new ApiResponse(
+        200,
+        {
+          user: loggedInWorker,
+          accessToken,
+          refreshToken,
+        },
+        "User logged In Successfully"
+      )
+    );
+});
+
+
+const workerLogout = asyncHandler(async (req, res) => {
+
+  await Worker.findOneAndUpdate(
+    req.user._id, // Find worker by employeeId
+    {
+      $unset: {
+        refreshToken: 1, // this removes the field from document
+      },
+    },
+    {
+      new: true,
+    }
+  );
+
+  const options = {
+    httpOnly: true,
+    secure: true,
+  };
+
+  return res
+    .status(200)
+    .clearCookie("accessToken", options)
+    .clearCookie("refreshToken", options)
+    .json(new ApiResponse(200, {}, "User logged out"));
+});
 
 export {
    generateAccessAndRefreshTokens,
@@ -348,5 +445,7 @@ export {
    verifyOTP,
    forgetPassword,
    resetPassword,
-   confirmOTP
+   confirmOTP,
+   loginEmploy,
+   workerLogout
 };

@@ -9,6 +9,7 @@ import { FaShoppingBag } from "react-icons/fa";
 import { Button, Progress, Table } from "flowbite-react";
 import { Link } from "react-router-dom";
 import { BASE_URL } from "../../apiConfig";
+import Charts from "./chart/Charts";
 
 const DashboardComp = () => {
   const { currentUser, accessToken } = useSelector((state) => state.user);
@@ -252,6 +253,9 @@ const DashboardComp = () => {
           </Table>
         </div>
       </div>
+        <div className="w-full">
+          <Charts />
+        </div>
     </div>
   );
 };
