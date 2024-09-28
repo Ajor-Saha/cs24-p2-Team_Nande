@@ -81,3 +81,27 @@ npm run dev
 ## Data Fetching Issue or Observing Operational Changes in Our App
 
 If you encounter a data fetching issue or notice operational changes within our web app, please click the reload button located in the header section.
+
+### Video Demostration of Our App
+
+[![Code Samurai Hackathon 2024 | EcoSync Web Project](https://ytcards.demolab.com/?id=Vp8CP9xFJA0&title=Code+Samurai+Hackathon+2024+%7C+EcoSync+Web+Project&lang=en&timestamp=1727193642&background_color=%230d1117&title_color=%23ffffff&stats_color=%23dedede&max_title_lines=2&width=250&border_radius=5&duration=1029 "Code Samurai Hackathon 2024 | EcoSync Web Project")](https://youtu.be/Vp8CP9xFJA0?si=uOnCy6DL8kZ_rb_a)
+
+
+### Problem Statement Phase 2 of Hackathon
+
+[Phase 2 Problem Statement](https://drive.google.com/file/d/1fHWEImxFUBQp6tfnfXvITzEwP83NcqI-/view?usp=sharing)
+
+### Final round problem statement
+[Final Round](https://drive.google.com/file/d/1gip0B1cIiQ3N02kDhA9V_9cUQmKnybjg/view?usp=sharing)
+
+### Presentation of this project
+[Presentation](https://docs.google.com/presentation/d/1FAF6JUGzDinKFZ9R2xdN8kKirwidWL35/edit?usp=sharing&ouid=110142282340470283003&rtpof=true&sd=true)
+
+### Api Documentation of this project
+[ApiDocumentation](https://docs.google.com/spreadsheets/d/1kHc_apYhnDJ_tVhHXVLIdcXxIDJRhdt5/edit?usp=sharing&ouid=110142282340470283003&rtpof=true&sd=true)
+
+### ER Diagram of this project
+[ER Diagram](https://drive.google.com/file/d/1Qcc5LZzcF1rgsYItC0wPn-yCMhHtVtzE/view?usp=sharing)
+
+### Work Flow Diagram
+[Diagram](https://drive.google.com/file/d/17Pt7seRnRPj3-PrYyznJIvVpw5A-dOvw/view?usp=sharing)
